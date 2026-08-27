@@ -1,39 +1,14 @@
 /* =====================================================================
-   MY MARIO (VJ WORLD) — game.js (Pixel-Perfect Hitboxes & Instant Load)
+   MY MARIO (VJ WORLD) — game.js (Native Multi-Pointer Engine & Indian Levels)
    ===================================================================== */
 window.touchInput = { left: !1, right: !1, up: !1, down: !1, jump: !1, shoot: !1 };
 window.gameSettings = { playerSpeed: 240, bgmEnabled: !0, sfxEnabled: !0 };
 
-(() => {
-  const attachTouch = (id, key) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const setKey = (e, val) => {
-      e.preventDefault();
-      window.touchInput[key] = val;
-      if (val) el.classList.add('active');
-      else el.classList.remove('active');
-    };
-    ['touchstart', 'mousedown'].forEach(evt => el.addEventListener(evt, e => setKey(e, !0), { passive: !1 }));
-    ['touchend', 'touchcancel', 'mouseup', 'mouseleave'].forEach(evt => el.addEventListener(evt, e => setKey(e, !1), { passive: !1 }));
-  };
-
-  window.addEventListener('DOMContentLoaded', () => {
-    [
-      ['btn-left', 'left'],
-      ['btn-right', 'right'],
-      ['btn-down', 'down'],
-      ['btn-jump', 'jump'],
-      ['btn-shoot', 'shoot']
-    ].forEach(([id, key]) => attachTouch(id, key));
-  });
-
-  document.addEventListener('pointerdown', () => {
-    if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    }
-  }, { once: !0 });
-})();
+document.addEventListener('pointerdown', () => {
+  if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  }
+}, { once: !0 });
 
 class RetroSynth {
   constructor() { this.ctx = null; this.bgmTimer = null; this.bgmOn = !1; this.activeScene = null; this.customMusicInstance = null; }
@@ -270,7 +245,7 @@ class BootScene extends Phaser.Scene {
       const tw = this.textures.get('water-tiles-raw').getSourceImage().width, th = this.textures.get('water-tiles-raw').getSourceImage().height;
       procCrop('water-tiles-raw', [
         { key: 'tile-lilypad', rx: 0, ry: 0, rw: 0.5 * tw, rh: th, ow: 280, oh: 85, bottomAlign: !0 },
-        { key: 'item-lotus', rx: 0.5 * tw, ry: 0, rw: 0.5 * tw, rh: th, ow: 140, oh: 140, bottomAlign: !0 }
+        { key: 'item-lotus', rx: 0.5 * tw, ry: 0, rw: 0.48 * tw, rh: th, ow: 140, oh: 140, bottomAlign: !0 }
       ]);
     }
 
@@ -378,7 +353,6 @@ class BootScene extends Phaser.Scene {
       this.anims.create({ key: 'eagle-fly', frames: [{ key: 'eagle-spritesheet', frame: 0 }, { key: 'eagle-spritesheet', frame: 1 }, { key: 'eagle-spritesheet', frame: 2 }], frameRate: 7, repeat: -1 });
     }
 
-    // Direct Instant Auto Transition to Story Video
     synth.getCtx();
     this.scene.start('StoryVideoScene');
   }
@@ -409,7 +383,7 @@ class StoryVideoScene extends Phaser.Scene {
     const onSkip = () => {
       this.skipPressCount++;
       if (this.skipPressCount === 1) {
-        this.skipPrompt.setText('PRESS SPACE / ENTER AGAIN TO SKIP ⏩');
+        this.skipPrompt.setText('TAP OR PRESS ENTER AGAIN TO SKIP ⏩');
         this.tweens.add({ targets: this.skipPrompt, alpha: 1, duration: 150 });
         if (this.skipResetTimer) this.skipResetTimer.remove();
         this.skipResetTimer = this.time.delayedCall(2200, () => { this.skipPressCount = 0; this.tweens.add({ targets: this.skipPrompt, alpha: 0, duration: 250 }); });
@@ -448,7 +422,7 @@ class TitleScene extends Phaser.Scene {
     const dT = this.add.sprite(W - 150, H - 55, 'turtle', 0).setScale(0.48).setFlipX(!0).play('turtle-walk');
     this.tweens.add({ targets: dG, x: 260, duration: 2000, yoyo: !0, repeat: -1, onYoyo: () => dG.toggleFlipX() });
     this.tweens.add({ targets: dT, x: W - 260, duration: 2200, yoyo: !0, repeat: -1, onYoyo: () => dT.toggleFlipX() });
-    const pTxt = this.add.text(W / 2, H / 2 + 130, 'PRESS ENTER / SPACE / TAP TO PLAY', { fontFamily: 'Arial Black', fontSize: '20px', color: '#ffffff', backgroundColor: '#7a2fbf', padding: { x: 16, y: 10 } }).setOrigin(0.5).setInteractive({ useHandCursor: !0 });
+    const pTxt = this.add.text(W / 2, H / 2 + 130, 'PRESS ENTER / TAP TO PLAY', { fontFamily: 'Arial Black', fontSize: '20px', color: '#ffffff', backgroundColor: '#7a2fbf', padding: { x: 16, y: 10 } }).setOrigin(0.5).setInteractive({ useHandCursor: !0 });
     this.tweens.add({ targets: pTxt, alpha: 0.4, duration: 600, yoyo: !0, repeat: -1 });
     const htp = this.add.text(W / 2, H / 2 + 180, '📖 HOW TO PLAY', { fontFamily: 'Arial Black', fontSize: '16px', color: '#fff', backgroundColor: '#444', padding: { x: 12, y: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: !0 });
     htp.on('pointerdown', () => this.showHTP());
@@ -464,9 +438,9 @@ class TitleScene extends Phaser.Scene {
       g.addMultiple([this.add.rectangle(x, y + 4, w, h, 0xaaaaaa).setOrigin(0.5), this.add.rectangle(x, y, w, h, 0xffffff).setOrigin(0.5), this.add.text(x, y, l, { fontFamily: 'Arial Black', fontSize: arr ? '24px' : '18px', color: '#333' }).setOrigin(0.5), this.add.text(x, y + h / 2 + 16, d, { fontFamily: 'Arial Black', fontSize: '11px', color: '#ffea00', align: 'center' }).setOrigin(0.5)]);
     };
     const bx = W / 2 - 120, by = H / 2 + 15;
-    dk(bx, by - 50, 45, 45, '↑', 'JUMP', !0); dk(bx - 50, by, 45, 45, '←', 'RUN LEFT', !0); dk(bx, by, 45, 45, '↓', 'DUCK\n(REDUCE SIZE)', !0); dk(bx + 50, by, 45, 45, '→', 'RUN RIGHT', !0);
-    dk(W / 2 + 140, by - 50, 160, 45, 'SPACE', 'JUMP'); dk(W / 2 + 140, by, 60, 45, 'X', 'SHOOT');
-    const cTxt = this.add.text(W / 2, H / 2 + 140, '✖ PRESS ANY KEY TO CLOSE', { fontFamily: 'Arial Black', fontSize: '14px', color: '#ff5555' }).setOrigin(0.5);
+    dk(bx, by - 50, 45, 45, '↑', 'JUMP', !0); dk(bx - 50, by, 45, 45, '←', 'RUN LEFT', !0); dk(bx, by, 45, 45, '↓', 'DUCK / CRAWL', !0); dk(bx + 50, by, 45, 45, '→', 'RUN RIGHT', !0);
+    dk(W / 2 + 140, by - 50, 160, 45, 'SPACE / TAP', 'JUMP'); dk(W / 2 + 140, by, 60, 45, 'X / 🏹', 'SHOOT');
+    const cTxt = this.add.text(W / 2, H / 2 + 140, '✖ TAP ANYWHERE TO CLOSE', { fontFamily: 'Arial Black', fontSize: '14px', color: '#ff5555' }).setOrigin(0.5);
     this.tweens.add({ targets: cTxt, alpha: 0.4, duration: 600, yoyo: !0, repeat: -1 }); g.add(cTxt);
     this.time.delayedCall(150, () => {
       const close = () => { this.input.keyboard.off('keydown', close); bg.off('pointerdown', close); g.destroy(!0); this.htpOpen = !1; };
@@ -482,24 +456,27 @@ class LevelSelectScene extends Phaser.Scene {
     this.add.image(W / 2, H / 2, 'bg-sky').setDisplaySize(W, H);
     this.add.image(W / 2, H - 45, 'ground-deco').setDisplaySize(W, 160).setOrigin(0.5);
     this.add.text(W / 2, 45, 'CHOOSE LEVEL', { fontFamily: 'Arial Black', fontSize: '38px', color: '#ffcc00', stroke: '#7a2fbf', strokeThickness: 7 }).setOrigin(0.5);
-    const startX = W / 2 - 280, startY = 160, badges = [
-      { name: 'LEVEL 1', sub: '🌟 5 GEMS' },
-      { name: 'LEVEL 2', sub: '🌙 NIGHT' },
-      { name: 'LEVEL 3', sub: '🏜️ DESERT' },
-      { name: 'LEVEL 4', sub: '🌌 HARD NIGHT' },
-      { name: 'LEVEL 5', sub: '❄️ ICE STORM' },
-      { name: 'LEVEL 6', sub: '🌊 JAL MAHAL' },
-      { name: 'LEVEL 7', sub: '☁️ SKY KINGDOM' }
+    const startX = W / 2 - 280, startY = 160;
+    
+    // Indian-English Authentic Themed Names
+    const badges = [
+      { name: 'LEVEL 1', sub: 'SHIVALIK HILLS' },
+      { name: 'LEVEL 2', sub: 'SUNDERBANS NIGHT' },
+      { name: 'LEVEL 3', sub: 'THAR EXPEDITION' },
+      { name: 'LEVEL 4', sub: 'KALINGA MIDNIGHT' },
+      { name: 'LEVEL 5', sub: 'HIMALAYAN STORM' },
+      { name: 'LEVEL 6', sub: 'JAL MAHAL PALACE' },
+      { name: 'LEVEL 7', sub: 'MEGHALAYA HEAVENS' }
     ];
     this.selectedIndex = 0; this.cards = [];
     for (let i = 1; i <= 10; i++) {
       const bx = startX + ((i - 1) % 5) * 140, by = startY + Math.floor((i - 1) / 5) * 110, isP = (i <= 7);
-      const card = this.add.rectangle(bx, by, 110, 85, isP ? 0x7a2fbf : 0x2a2a2a, 0.92);
+      const card = this.add.rectangle(bx, by, 115, 88, isP ? 0x7a2fbf : 0x2a2a2a, 0.92);
       this.cards.push(card);
       if (isP) {
         card.setInteractive({ useHandCursor: !0 });
         this.add.text(bx, by - 14, badges[i - 1].name, { fontFamily: 'Arial Black', fontSize: '15px', color: '#ffffff' }).setOrigin(0.5);
-        this.add.text(bx, by + 16, badges[i - 1].sub, { fontFamily: 'Arial Black', fontSize: '10px', color: '#ffea00' }).setOrigin(0.5);
+        this.add.text(bx, by + 16, badges[i - 1].sub, { fontFamily: 'Arial Black', fontSize: '9px', color: '#ffea00', align: 'center' }).setOrigin(0.5);
         card.on('pointerdown', () => { synth.getCtx(); this.scene.start('PlayScene', { currentLevel: i, currentScore: 0, currentLives: 5 }); });
       } else {
         this.add.text(bx, by - 10, `LVL ${i}`, { fontFamily: 'Arial', fontSize: '14px', color: '#777' }).setOrigin(0.5);
@@ -508,7 +485,7 @@ class LevelSelectScene extends Phaser.Scene {
     }
     const backBtn = this.add.text(W / 2, H - 35, '⬅ BACK TO TITLE', { fontFamily: 'Arial Black', fontSize: '14px', color: '#00ffff', stroke: '#000', strokeThickness: 3 }).setOrigin(0.5).setInteractive({ useHandCursor: !0 });
     backBtn.on('pointerdown', () => this.scene.start('TitleScene'));
-    const upd = () => this.cards.forEach((c, i) => i < 7 ? c.setStrokeStyle(3, i === this.selectedIndex ? 0xffffff : 0xffcc00).setScale(i === this.selectedIndex ? 1.15 : 1.0).setFillStyle(i === this.selectedIndex ? 0x9a4fdf : 0x7a2fbf) : c.setStrokeStyle(3, 0x444444));
+    const upd = () => this.cards.forEach((c, i) => i < 7 ? c.setStrokeStyle(3, i === this.selectedIndex ? 0xffffff : 0xffcc00).setScale(i === this.selectedIndex ? 1.12 : 1.0).setFillStyle(i === this.selectedIndex ? 0x9a4fdf : 0x7a2fbf) : c.setStrokeStyle(3, 0x444444));
     upd();
     this.input.keyboard.on('keydown-LEFT', () => { synth.getCtx(); this.selectedIndex = Math.max(0, this.selectedIndex - 1); upd(); });
     this.input.keyboard.on('keydown-RIGHT', () => { synth.getCtx(); this.selectedIndex = Math.min(6, this.selectedIndex + 1); upd(); });
@@ -522,8 +499,10 @@ class PlayScene extends Phaser.Scene {
   init(d) {
     this.currentLevel = d.currentLevel || 1; this.score = d.currentScore || 0; this.lives = d.currentLives !== undefined ? d.currentLives : 5;
     this.hasArrows = !1; this.starAmmo = 0; this.gemsCollected = 0; this.totalGems = 5; this.collectedTypes = new Set(); this.jumpCount = 0; this.isShooting = !1;
+    this.touchJumpBuffered = !1;
   }
   create() {
+    this.input.addPointer(3); // 4 Multi-Touch Fingers Active
     this.SURFACE_Y = 473;
     const L = this.currentLevel, isL2 = L === 2, isL3 = L === 3, isL4 = L === 4, isL5 = L === 5, isL6 = L === 6, isL7 = L === 7, isDesert = isL3 || isL4;
     document.body.style.backgroundColor = isL7 ? '#2a1a3a' : (isL6 ? '#10162a' : (isL5 ? '#111122' : (isL4 ? '#0a1020' : (isL2 ? '#162244' : (isDesert ? '#88ccff' : '#5c94fc')))));
@@ -716,7 +695,6 @@ class PlayScene extends Phaser.Scene {
         return lp;
       };
       
-      // Standalone Lilypads with true water gaps
       [1450, 1850, 3100, 3500, 3900, 5100, 6100, 7900].forEach(lx => addLily(lx, !1));
       [2400, 4700, 6500].forEach(lx => addLily(lx, !0));
 
@@ -954,6 +932,8 @@ class PlayScene extends Phaser.Scene {
     const pbtn = this.add.text(this.scale.width - 20, 52, '⚙️', { fontFamily: 'Arial', fontSize: '24px' }).setOrigin(1, 0).setScrollFactor(0).setDepth(101).setInteractive({ useHandCursor: !0 });
     pbtn.on('pointerdown', () => this.togglePauseMenu());
 
+    this.setupTouchControls();
+
     this.timerEvent = this.time.addEvent({
       delay: 1000, loop: !0, callback: () => {
         if (this.gameOverFlag || this.isPaused || this.isAutoWalking) return;
@@ -966,6 +946,42 @@ class PlayScene extends Phaser.Scene {
     this.events.once('shutdown', () => synth.stopBGM());
     const proc = () => { if (this.canProceedLevel) { synth.getCtx(); this.scene.restart({ currentLevel: this.currentLevel + 1, currentScore: this.score, currentLives: this.lives }); } };
     ['keydown-SPACE', 'keydown-ENTER'].forEach(e => this.input.keyboard.on(e, proc));
+  }
+
+  setupTouchControls() {
+    this.touchBtns = [];
+    const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (!isTouch) return;
+
+    const createBtn = (x, y, w, h, icon, col, onDown, onUp) => {
+      const g = this.add.graphics().setScrollFactor(0).setDepth(500);
+      const draw = (press) => {
+        g.clear();
+        g.fillStyle(press ? 0xffcc00 : col, press ? 0.75 : 0.35);
+        g.fillRoundedRect(x - w / 2, y - h / 2, w, h, 14);
+        g.lineStyle(2, press ? 0xffea00 : 0xffffff, 0.6);
+        g.strokeRoundedRect(x - w / 2, y - h / 2, w, h, 14);
+      };
+      draw(!1);
+      const txt = this.add.text(x, y, icon, { fontFamily: 'Arial Black', fontSize: '22px', color: '#ffffff' }).setOrigin(0.5).setScrollFactor(0).setDepth(501);
+      const hit = this.add.zone(x, y, w + 16, h + 16).setScrollFactor(0).setDepth(502).setInteractive({ useHandCursor: !0 });
+      hit.on('pointerdown', () => { draw(!0); onDown(); });
+      hit.on('pointerup', () => { draw(!1); onUp(); });
+      hit.on('pointerout', () => { draw(!1); onUp(); });
+      this.touchBtns.push({ g, txt, hit });
+    };
+
+    // Left D-Pad Controls
+    createBtn(65, 480, 68, 54, '◀', 0x222222, () => { window.touchInput.left = !0; }, () => { window.touchInput.left = !1; });
+    createBtn(145, 480, 68, 54, '▼', 0x333333, () => { window.touchInput.down = !0; }, () => { window.touchInput.down = !1; });
+    createBtn(225, 480, 68, 54, '▶', 0x222222, () => { window.touchInput.right = !0; }, () => { window.touchInput.right = !1; });
+
+    // Right Action Buttons (Shoot & Large Jump Pad)
+    createBtn(this.scale.width - 165, 480, 68, 58, '🏹', 0xdd2222, () => { window.touchInput.shoot = !0; }, () => { window.touchInput.shoot = !1; });
+    createBtn(this.scale.width - 75, 475, 80, 68, '▲', 0x00aa44, () => {
+      window.touchInput.jump = !0;
+      this.touchJumpBuffered = !0;
+    }, () => { window.touchInput.jump = !1; });
   }
 
   onCloudLand(player, cloud) {
@@ -1155,8 +1171,8 @@ class PlayScene extends Phaser.Scene {
 
     if (onGround) this.jumpCount = 0;
     const jumpK = Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.keys.W) || Phaser.Input.Keyboard.JustDown(this.keys.SPACE);
-    let tJump = !1; if (window.touchInput.jump && !this.lastTouchJ) tJump = !0; this.lastTouchJ = window.touchInput.jump;
-    const jumpHit = jumpK || tJump;
+    const jumpHit = jumpK || this.touchJumpBuffered;
+    this.touchJumpBuffered = !1; // Reset instant jump trigger
 
     if (!this.isHurt) {
       if (down) { this.player.setScale(0.68, 0.44); this.player.body.setSize(36, 50).setOffset(52, 90); }
@@ -1420,26 +1436,26 @@ class PlayScene extends Phaser.Scene {
 
   openPauseModal() {
     const W = this.scale.width, H = this.scale.height; this.pauseModalElements = [];
-    const overlay = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.78).setScrollFactor(0).setDepth(300);
-    const card = this.add.rectangle(W / 2, H / 2, 460, 360, 0x1e1e24, 0.96).setStrokeStyle(3, 0xffcc00).setScrollFactor(0).setDepth(301);
-    const title = this.add.text(W / 2, H / 2 - 145, '⚙️ GAME PAUSED & SETTINGS', { fontFamily: 'Arial Black', fontSize: '20px', color: '#ffcc00' }).setOrigin(0.5).setScrollFactor(0).setDepth(302);
-    const sLab = this.add.text(W / 2 - 190, H / 2 - 100, 'PLAYER SPEED:', { fontFamily: 'Arial Black', fontSize: '13px', color: '#fff' }).setScrollFactor(0).setDepth(302);
+    const overlay = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.78).setScrollFactor(0).setDepth(600);
+    const card = this.add.rectangle(W / 2, H / 2, 460, 360, 0x1e1e24, 0.96).setStrokeStyle(3, 0xffcc00).setScrollFactor(0).setDepth(601);
+    const title = this.add.text(W / 2, H / 2 - 145, '⚙️ GAME PAUSED & SETTINGS', { fontFamily: 'Arial Black', fontSize: '20px', color: '#ffcc00' }).setOrigin(0.5).setScrollFactor(0).setDepth(602);
+    const sLab = this.add.text(W / 2 - 190, H / 2 - 100, 'PLAYER SPEED:', { fontFamily: 'Arial Black', fontSize: '13px', color: '#fff' }).setScrollFactor(0).setDepth(602);
     [{ name: 'NORMAL', val: 240, x: W / 2 - 30 }, { name: 'FAST', val: 300, x: W / 2 + 55 }, { name: 'TURBO', val: 360, x: W / 2 + 140 }].forEach(s => {
       const isSel = window.gameSettings.playerSpeed === s.val;
-      const b = this.add.text(s.x, H / 2 - 100, s.name, { fontFamily: 'Arial Black', fontSize: '12px', color: '#fff', backgroundColor: isSel ? '#ffaa00' : '#444', padding: { x: 8, y: 4 } }).setOrigin(0.5).setScrollFactor(0).setDepth(302).setInteractive({ useHandCursor: !0 });
+      const b = this.add.text(s.x, H / 2 - 100, s.name, { fontFamily: 'Arial Black', fontSize: '12px', color: '#fff', backgroundColor: isSel ? '#ffaa00' : '#444', padding: { x: 8, y: 4 } }).setOrigin(0.5).setScrollFactor(0).setDepth(602).setInteractive({ useHandCursor: !0 });
       b.on('pointerdown', () => { window.gameSettings.playerSpeed = s.val; this.closePauseModal(); this.openPauseModal(); });
       this.pauseModalElements.push(b);
     });
-    const aLab = this.add.text(W / 2 - 190, H / 2 - 50, 'AUDIO CONTROL:', { fontFamily: 'Arial Black', fontSize: '13px', color: '#fff' }).setScrollFactor(0).setDepth(302);
-    const bgmB = this.add.text(W / 2, H / 2 - 50, `BGM: ${window.gameSettings.bgmEnabled ? '🔊 ON' : '🔇 OFF'}`, { fontFamily: 'Arial Black', fontSize: '13px', color: '#fff', backgroundColor: window.gameSettings.bgmEnabled ? '#2e7d32' : '#c62828', padding: { x: 10, y: 5 } }).setOrigin(0.5).setScrollFactor(0).setDepth(302).setInteractive({ useHandCursor: !0 });
+    const aLab = this.add.text(W / 2 - 190, H / 2 - 50, 'AUDIO CONTROL:', { fontFamily: 'Arial Black', fontSize: '13px', color: '#fff' }).setScrollFactor(0).setDepth(602);
+    const bgmB = this.add.text(W / 2, H / 2 - 50, `BGM: ${window.gameSettings.bgmEnabled ? '🔊 ON' : '🔇 OFF'}`, { fontFamily: 'Arial Black', fontSize: '13px', color: '#fff', backgroundColor: window.gameSettings.bgmEnabled ? '#2e7d32' : '#c62828', padding: { x: 10, y: 5 } }).setOrigin(0.5).setScrollFactor(0).setDepth(602).setInteractive({ useHandCursor: !0 });
     bgmB.on('pointerdown', () => { window.gameSettings.bgmEnabled = !window.gameSettings.bgmEnabled; this.closePauseModal(); this.openPauseModal(); });
-    const sfxB = this.add.text(W / 2 + 130, H / 2 - 50, `SFX: ${window.gameSettings.sfxEnabled ? '🔔 ON' : '🔕 OFF'}`, { fontFamily: 'Arial Black', fontSize: '13px', color: '#fff', backgroundColor: window.gameSettings.sfxEnabled ? '#2e7d32' : '#c62828', padding: { x: 10, y: 5 } }).setOrigin(0.5).setScrollFactor(0).setDepth(302).setInteractive({ useHandCursor: !0 });
+    const sfxB = this.add.text(W / 2 + 130, H / 2 - 50, `SFX: ${window.gameSettings.sfxEnabled ? '🔔 ON' : '🔕 OFF'}`, { fontFamily: 'Arial Black', fontSize: '13px', color: '#fff', backgroundColor: window.gameSettings.sfxEnabled ? '#2e7d32' : '#c62828', padding: { x: 10, y: 5 } }).setOrigin(0.5).setScrollFactor(0).setDepth(602).setInteractive({ useHandCursor: !0 });
     sfxB.on('pointerdown', () => { window.gameSettings.sfxEnabled = !window.gameSettings.sfxEnabled; this.closePauseModal(); this.openPauseModal(); });
-    const resB = this.add.text(W / 2, H / 2 + 20, '▶️ RESUME (ESC / P)', { fontFamily: 'Arial Black', fontSize: '16px', color: '#fff', backgroundColor: '#7a2fbf', padding: { x: 24, y: 8 } }).setOrigin(0.5).setScrollFactor(0).setDepth(302).setInteractive({ useHandCursor: !0 });
+    const resB = this.add.text(W / 2, H / 2 + 20, '▶️ RESUME', { fontFamily: 'Arial Black', fontSize: '16px', color: '#fff', backgroundColor: '#7a2fbf', padding: { x: 24, y: 8 } }).setOrigin(0.5).setScrollFactor(0).setDepth(602).setInteractive({ useHandCursor: !0 });
     resB.on('pointerdown', () => this.togglePauseMenu());
-    const restB = this.add.text(W / 2, H / 2 + 70, '🔄 RESTART LEVEL', { fontFamily: 'Arial Black', fontSize: '15px', color: '#fff', backgroundColor: '#e65100', padding: { x: 20, y: 7 } }).setOrigin(0.5).setScrollFactor(0).setDepth(302).setInteractive({ useHandCursor: !0 });
+    const restB = this.add.text(W / 2, H / 2 + 70, '🔄 RESTART LEVEL', { fontFamily: 'Arial Black', fontSize: '15px', color: '#fff', backgroundColor: '#e65100', padding: { x: 20, y: 7 } }).setOrigin(0.5).setScrollFactor(0).setDepth(602).setInteractive({ useHandCursor: !0 });
     restB.on('pointerdown', () => { this.closePauseModal(); this.scene.restart({ currentLevel: this.currentLevel, currentScore: this.score, currentLives: 5 }); });
-    const homeB = this.add.text(W / 2, H / 2 + 120, '🏠 MAIN MENU (HOME)', { fontFamily: 'Arial Black', fontSize: '15px', color: '#fff', backgroundColor: '#37474f', padding: { x: 20, y: 7 } }).setOrigin(0.5).setScrollFactor(0).setDepth(302).setInteractive({ useHandCursor: !0 });
+    const homeB = this.add.text(W / 2, H / 2 + 120, '🏠 MAIN MENU', { fontFamily: 'Arial Black', fontSize: '15px', color: '#fff', backgroundColor: '#37474f', padding: { x: 20, y: 7 } }).setOrigin(0.5).setScrollFactor(0).setDepth(602).setInteractive({ useHandCursor: !0 });
     homeB.on('pointerdown', () => { this.closePauseModal(); this.scene.start('TitleScene'); });
     this.pauseModalElements.push(overlay, card, title, sLab, aLab, bgmB, sfxB, resB, restB, homeB);
   }
@@ -1447,19 +1463,19 @@ class PlayScene extends Phaser.Scene {
 
   showLevelClearOverlay() {
     this.canProceedLevel = !0; const W = this.scale.width, H = this.scale.height, bx = W * 0.28;
-    this.add.rectangle(bx, H / 2, 420, 320, 0x0a0a14, 0.88).setStrokeStyle(3, 0x33ff33).setScrollFactor(0).setDepth(200);
-    this.add.text(bx, H / 2 - 80, `LEVEL ${this.currentLevel} COMPLETED!`, { fontFamily: 'Arial Black', fontSize: '24px', color: '#33ff33', stroke: '#000', strokeThickness: 5 }).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    this.add.text(bx, H / 2 - 15, `CURRENT SCORE: ${this.score}\n💎 ALL 5 GEMS COLLECTED!`, { fontFamily: 'Arial', fontSize: '18px', color: '#ffee88', stroke: '#000', strokeThickness: 3, align: 'center' }).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    const nBtn = this.add.text(bx, H / 2 + 65, `START LEVEL ${this.currentLevel + 1}\n(SPACE / ENTER / CLICK)`, { fontFamily: 'Arial Black', fontSize: '15px', color: '#fff', backgroundColor: '#ff5500', align: 'center', padding: { x: 16, y: 8 } }).setOrigin(0.5).setScrollFactor(0).setDepth(201).setInteractive({ useHandCursor: !0 });
+    this.add.rectangle(bx, H / 2, 420, 320, 0x0a0a14, 0.88).setStrokeStyle(3, 0x33ff33).setScrollFactor(0).setDepth(600);
+    this.add.text(bx, H / 2 - 80, `LEVEL ${this.currentLevel} COMPLETED!`, { fontFamily: 'Arial Black', fontSize: '24px', color: '#33ff33', stroke: '#000', strokeThickness: 5 }).setOrigin(0.5).setScrollFactor(0).setDepth(601);
+    this.add.text(bx, H / 2 - 15, `CURRENT SCORE: ${this.score}\n💎 ALL 5 GEMS COLLECTED!`, { fontFamily: 'Arial', fontSize: '18px', color: '#ffee88', stroke: '#000', strokeThickness: 3, align: 'center' }).setOrigin(0.5).setScrollFactor(0).setDepth(601);
+    const nBtn = this.add.text(bx, H / 2 + 65, `START LEVEL ${this.currentLevel + 1}\n(TAP OR PRESS ENTER)`, { fontFamily: 'Arial Black', fontSize: '15px', color: '#fff', backgroundColor: '#ff5500', align: 'center', padding: { x: 16, y: 8 } }).setOrigin(0.5).setScrollFactor(0).setDepth(601).setInteractive({ useHandCursor: !0 });
     nBtn.on('pointerdown', () => { synth.getCtx(); this.scene.restart({ currentLevel: this.currentLevel + 1, currentScore: this.score, currentLives: this.lives }); });
   }
 
   showGameCompletedOverlay() {
     this.canProceedLevel = !1; const W = this.scale.width, H = this.scale.height, bx = W * 0.28;
-    this.add.rectangle(bx, H / 2, 430, 340, 0x0d0718, 0.90).setStrokeStyle(3, 0xffcc00).setScrollFactor(0).setDepth(200);
-    this.add.text(bx, H / 2 - 95, '🏆 GAME BEATEN! 🏆', { fontFamily: 'Arial Black', fontSize: '26px', color: '#ffcc00', stroke: '#7a2fbf', strokeThickness: 6, align: 'center' }).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    this.add.text(bx, H / 2 - 10, `CONGRATULATIONS!\nFINAL SCORE: ${this.score}`, { fontFamily: 'Arial', fontSize: '19px', color: '#fff', align: 'center', stroke: '#000', strokeThickness: 3 }).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    const pBtn = this.add.text(bx, H / 2 + 75, 'MAIN MENU\n(ENTER / CLICK)', { fontFamily: 'Arial Black', fontSize: '15px', color: '#fff', backgroundColor: '#7a2fbf', align: 'center', padding: { x: 16, y: 8 } }).setOrigin(0.5).setScrollFactor(0).setDepth(201).setInteractive({ useHandCursor: !0 });
+    this.add.rectangle(bx, H / 2, 430, 340, 0x0d0718, 0.90).setStrokeStyle(3, 0xffcc00).setScrollFactor(0).setDepth(600);
+    this.add.text(bx, H / 2 - 95, '🏆 GAME BEATEN! 🏆', { fontFamily: 'Arial Black', fontSize: '26px', color: '#ffcc00', stroke: '#7a2fbf', strokeThickness: 6, align: 'center' }).setOrigin(0.5).setScrollFactor(0).setDepth(601);
+    this.add.text(bx, H / 2 - 10, `CONGRATULATIONS!\nFINAL SCORE: ${this.score}`, { fontFamily: 'Arial', fontSize: '19px', color: '#fff', align: 'center', stroke: '#000', strokeThickness: 3 }).setOrigin(0.5).setScrollFactor(0).setDepth(601);
+    const pBtn = this.add.text(bx, H / 2 + 75, 'MAIN MENU\n(TAP OR ENTER)', { fontFamily: 'Arial Black', fontSize: '15px', color: '#fff', backgroundColor: '#7a2fbf', align: 'center', padding: { x: 16, y: 8 } }).setOrigin(0.5).setScrollFactor(0).setDepth(601).setInteractive({ useHandCursor: !0 });
     pBtn.on('pointerdown', () => this.scene.start('TitleScene'));
   }
 
@@ -1467,10 +1483,10 @@ class PlayScene extends Phaser.Scene {
     if (this.gameOverFlag) return;
     this.gameOverFlag = !0; this.physics.pause(); this.timerEvent.remove(); synth.stopBGM(); synth.gameOver();
     const W = this.scale.width, H = this.scale.height;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.65).setScrollFactor(0).setDepth(200);
-    this.add.text(W / 2, H / 2 - 50, 'GAME OVER', { fontFamily: 'Arial Black', fontSize: '38px', color: '#fff', stroke: '#000', strokeThickness: 6 }).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    this.add.text(W / 2, H / 2 + 10, `SCORE: ${this.score}`, { fontFamily: 'Arial', fontSize: '20px', color: '#ffee88', align: 'center' }).setOrigin(0.5).setScrollFactor(0).setDepth(201);
-    const rBtn = this.add.text(W / 2, H / 2 + 75, 'RETRY (LAST CHECKPOINT)', { fontFamily: 'Arial', fontSize: '18px', color: '#fff', backgroundColor: '#7a2fbf', padding: { x: 14, y: 8 } }).setOrigin(0.5).setScrollFactor(0).setDepth(201).setInteractive({ useHandCursor: !0 });
+    this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.65).setScrollFactor(0).setDepth(600);
+    this.add.text(W / 2, H / 2 - 50, 'GAME OVER', { fontFamily: 'Arial Black', fontSize: '38px', color: '#fff', stroke: '#000', strokeThickness: 6 }).setOrigin(0.5).setScrollFactor(0).setDepth(601);
+    this.add.text(W / 2, H / 2 + 10, `SCORE: ${this.score}`, { fontFamily: 'Arial', fontSize: '20px', color: '#ffee88', align: 'center' }).setOrigin(0.5).setScrollFactor(0).setDepth(601);
+    const rBtn = this.add.text(W / 2, H / 2 + 75, 'RETRY (LAST CHECKPOINT)', { fontFamily: 'Arial', fontSize: '18px', color: '#fff', backgroundColor: '#7a2fbf', padding: { x: 14, y: 8 } }).setOrigin(0.5).setScrollFactor(0).setDepth(601).setInteractive({ useHandCursor: !0 });
     rBtn.on('pointerdown', () => this.scene.restart({ currentLevel: this.currentLevel, currentScore: this.score, currentLives: 5 }));
   }
 }
