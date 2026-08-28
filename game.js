@@ -1,5 +1,6 @@
 /* =====================================================================
-   MY MARIO (VJ WORLD) — game.js (Ergonomic Mobile Layout & Duck Toggle)
+   THE LEGEND OF VJ — game.js (Final Production Live Edition)
+   Created & Developed by: VAIBHAV JAIN (VJ World Studios)
    ===================================================================== */
 window.touchInput = { left: !1, right: !1, jump: !1, shoot: !1 };
 window.gameSettings = { playerSpeed: 240, bgmEnabled: !0, sfxEnabled: !0 };
@@ -78,7 +79,7 @@ class RetroSynth {
         if (!this.bgmOn || !window.gameSettings.bgmEnabled) return;
         try {
           const c = this.getCtx(), o = c.createOscillator(), g = c.createGain(), t0 = c.currentTime;
-          o.type = (lvl === 6 || lvl === 7) ? 'sine' : (isFast ? 'sawtooth' : 'triangle'); o.frequency.value = notes[i % notes.length];
+          o.type = (lvl === 6 || lvl === 7 || lvl === 2) ? 'sine' : (isFast ? 'sawtooth' : 'triangle'); o.frequency.value = notes[i % notes.length];
           g.gain.value = 0.04; o.connect(g); g.connect(c.destination);
           g.gain.setValueAtTime(0.04, t0); g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.14); o.start(t0); o.stop(t0 + 0.16);
         } catch (e) {}
@@ -131,12 +132,12 @@ class BootScene extends Phaser.Scene {
   preload() {
     const W = this.scale.width, H = this.scale.height;
     this.add.rectangle(0, 0, W, H, 0x0f172a).setOrigin(0);
-    this.add.text(W / 2, H / 2 - 40, 'LOADING WORLD...', { fontFamily: 'Arial Black', fontSize: '24px', color: '#ffcc00', stroke: '#7a2fbf', strokeThickness: 6 }).setOrigin(0.5);
+    this.add.text(W / 2, H / 2 - 40, 'LOADING VJ REALM...', { fontFamily: 'Arial Black', fontSize: '24px', color: '#ffcc00', stroke: '#7a2fbf', strokeThickness: 6 }).setOrigin(0.5);
     const pct = this.add.text(W / 2, H / 2 + 10, '0%', { fontFamily: 'Arial Black', fontSize: '18px', color: '#00ffff' }).setOrigin(0.5);
     this.load.on('progress', v => { pct.setText(Math.floor(v * 100) + '%'); });
     
     [
-      ['tiles-raw', 'tiles.png'], ['ground-deco', 'ground.png'], ['bg-sky', 'bg-sky.jpg'], ['castle-raw', 'castle.png'],
+      ['tiles-raw', 'tiles.png'], ['ground-deco', 'ground.png'], ['bg-sky', 'bg-sky.jpg'], ['level2-bg', 'level2 bg.png'], ['castle-raw', 'castle.png'],
       ['diamonds-raw', 'diamonds.png'], ['desert-bg', 'desert.png'], ['desert-tiles-raw', 'desert tiles.png'],
       ['camel-raw', 'camel.png'], ['bear-raw', 'bear.png'], ['snow-elements-raw', 'snow element.png'],
       ['snow-tiles-raw', 'snow tiles.png'], ['snow-bg', 'snow.png'],
@@ -410,27 +411,37 @@ class StoryVideoScene extends Phaser.Scene {
 class TitleScene extends Phaser.Scene {
   constructor() { super('TitleScene'); }
   create() {
-    document.body.style.backgroundColor = '#5c94fc'; this.htpOpen = !1;
+    document.body.style.backgroundColor = '#5c94fc'; this.htpOpen = !1; this.creditsOpen = !1;
     const W = this.scale.width, H = this.scale.height;
     this.add.image(W / 2, H / 2, 'bg-sky').setDisplaySize(W, H);
     this.add.image(W / 2, H - 45, 'ground-deco').setDisplaySize(W, 160).setOrigin(0.5);
-    this.add.text(W / 2, 70, 'MY MARIO', { fontFamily: 'Arial Black', fontSize: '54px', color: '#ffcc00', stroke: '#7a2fbf', strokeThickness: 8 }).setOrigin(0.5);
-    this.add.text(W / 2, 125, '★ POWERED BY VJ WORLD ★', { fontFamily: 'Arial Black', fontSize: '18px', color: '#ffffff', stroke: '#7a2fbf', strokeThickness: 4 }).setOrigin(0.5);
-    const pShow = this.add.sprite(W / 2, H / 2 + 30, 'player', 6).setScale(0.95);
+    
+    // Updated Brand Name
+    this.add.text(W / 2, 60, 'THE LEGEND OF VJ', { fontFamily: 'Arial Black', fontSize: '46px', color: '#ffcc00', stroke: '#7a2fbf', strokeThickness: 8 }).setOrigin(0.5);
+    this.add.text(W / 2, 108, '★ POWERED BY VJ WORLD ★', { fontFamily: 'Arial Black', fontSize: '17px', color: '#ffffff', stroke: '#7a2fbf', strokeThickness: 4 }).setOrigin(0.5);
+    
+    const pShow = this.add.sprite(W / 2, H / 2 + 10, 'player', 6).setScale(0.95);
     this.tweens.add({ targets: pShow, y: pShow.y - 10, duration: 500, yoyo: !0, repeat: -1 });
     const dG = this.add.sprite(150, H - 55, 'mushroom', 0).setScale(0.52).play('mushroom-walk');
     const dT = this.add.sprite(W - 150, H - 55, 'turtle', 0).setScale(0.48).setFlipX(!0).play('turtle-walk');
     this.tweens.add({ targets: dG, x: 260, duration: 2000, yoyo: !0, repeat: -1, onYoyo: () => dG.toggleFlipX() });
     this.tweens.add({ targets: dT, x: W - 260, duration: 2200, yoyo: !0, repeat: -1, onYoyo: () => dT.toggleFlipX() });
-    const pTxt = this.add.text(W / 2, H / 2 + 130, 'PRESS ENTER / TAP TO PLAY', { fontFamily: 'Arial Black', fontSize: '20px', color: '#ffffff', backgroundColor: '#7a2fbf', padding: { x: 16, y: 10 } }).setOrigin(0.5).setInteractive({ useHandCursor: !0 });
+    
+    const pTxt = this.add.text(W / 2, H / 2 + 100, 'PRESS ENTER / TAP TO PLAY', { fontFamily: 'Arial Black', fontSize: '19px', color: '#ffffff', backgroundColor: '#7a2fbf', padding: { x: 16, y: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: !0 });
     this.tweens.add({ targets: pTxt, alpha: 0.4, duration: 600, yoyo: !0, repeat: -1 });
-    const htp = this.add.text(W / 2, H / 2 + 180, '📖 HOW TO PLAY', { fontFamily: 'Arial Black', fontSize: '16px', color: '#fff', backgroundColor: '#444', padding: { x: 12, y: 8 } }).setOrigin(0.5).setInteractive({ useHandCursor: !0 });
+    
+    const htp = this.add.text(W / 2 - 120, H / 2 + 155, '📖 HOW TO PLAY', { fontFamily: 'Arial Black', fontSize: '14px', color: '#fff', backgroundColor: '#334155', padding: { x: 12, y: 7 } }).setOrigin(0.5).setInteractive({ useHandCursor: !0 });
     htp.on('pointerdown', () => this.showHTP());
-    const go = () => { if (!this.htpOpen) { synth.getCtx(); this.scene.start('LevelSelectScene'); } };
+
+    const credits = this.add.text(W / 2 + 120, H / 2 + 155, '📜 STORY & CREDITS', { fontFamily: 'Arial Black', fontSize: '14px', color: '#fff', backgroundColor: '#334155', padding: { x: 12, y: 7 } }).setOrigin(0.5).setInteractive({ useHandCursor: !0 });
+    credits.on('pointerdown', () => this.showCredits());
+
+    const go = () => { if (!this.htpOpen && !this.creditsOpen) { synth.getCtx(); this.scene.start('LevelSelectScene'); } };
     pTxt.on('pointerdown', go); ['keydown-ENTER', 'keydown-SPACE'].forEach(e => this.input.keyboard.on(e, go));
   }
+  
   showHTP() {
-    if (this.htpOpen) return; this.htpOpen = !0;
+    if (this.htpOpen || this.creditsOpen) return; this.htpOpen = !0;
     const W = this.scale.width, H = this.scale.height, g = this.add.group();
     const bg = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.85).setInteractive();
     g.addMultiple([bg, this.add.rectangle(W / 2, H / 2, 600, 360, 0x1e1e24).setStrokeStyle(4, 0xffcc00), this.add.text(W / 2, H / 2 - 140, 'HOW TO PLAY', { fontFamily: 'Arial Black', fontSize: '28px', color: '#ffcc00' }).setOrigin(0.5)]);
@@ -444,6 +455,30 @@ class TitleScene extends Phaser.Scene {
     this.tweens.add({ targets: cTxt, alpha: 0.4, duration: 600, yoyo: !0, repeat: -1 }); g.add(cTxt);
     this.time.delayedCall(150, () => {
       const close = () => { this.input.keyboard.off('keydown', close); bg.off('pointerdown', close); g.destroy(!0); this.htpOpen = !1; };
+      this.input.keyboard.once('keydown', close); bg.once('pointerdown', close);
+    });
+  }
+
+  showCredits() {
+    if (this.creditsOpen || this.htpOpen) return; this.creditsOpen = !0;
+    const W = this.scale.width, H = this.scale.height, g = this.add.group();
+    const bg = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.88).setInteractive();
+    const card = this.add.rectangle(W / 2, H / 2, 680, 420, 0x0d1117, 0.98).setStrokeStyle(3, 0xffcc00);
+    const title = this.add.text(W / 2, H / 2 - 170, 'THE LEGEND OF VJ — CHRONICLES', { fontFamily: 'Arial Black', fontSize: '20px', color: '#ffcc00', stroke: '#7a2fbf', strokeThickness: 5 }).setOrigin(0.5);
+    
+    const lore = `When the ancient elemental harmony was disrupted, 5 Sacred Gems were scattered across 7 dangerous Indian territories — Shivalik Hills, the mystical Sunderbans, scorching Thar Desert, Kalinga Midnight, the frozen Himalayan storms, the submerged Jal Mahal Palace, and the storm heights of Meghalaya.\n\nTaking up the warrior mantle, VJ ventures through each territory to vanquish mystical beasts, collect all 5 gems, and hoist the royal purple VJ crest atop the castles.`;
+    const loreTxt = this.add.text(W / 2, H / 2 - 50, lore, { fontFamily: 'Arial', fontSize: '13px', color: '#e2e8f0', align: 'center', wordWrap: { width: 610 }, lineSpacing: 4 }).setOrigin(0.5);
+    
+    const credCard = this.add.rectangle(W / 2, H / 2 + 88, 620, 75, 0x161b22).setStrokeStyle(1.5, 0x7a2fbf);
+    const devTxt = this.add.text(W / 2, H / 2 + 76, 'LEAD CREATOR & DEVELOPER: VAIBHAV JAIN', { fontFamily: 'Arial Black', fontSize: '15px', color: '#ffd700' }).setOrigin(0.5);
+    const subCred = this.add.text(W / 2, H / 2 + 102, 'VJ World Studios • 2026 Live Edition • Phaser 3 Engine', { fontFamily: 'Arial', fontSize: '12px', color: '#38bdf8' }).setOrigin(0.5);
+
+    const cTxt = this.add.text(W / 2, H / 2 + 165, '✖ TAP ANYWHERE TO CLOSE', { fontFamily: 'Arial Black', fontSize: '14px', color: '#ff5555' }).setOrigin(0.5);
+    this.tweens.add({ targets: cTxt, alpha: 0.4, duration: 600, yoyo: !0, repeat: -1 });
+    
+    g.addMultiple([bg, card, title, loreTxt, credCard, devTxt, subCred, cTxt]);
+    this.time.delayedCall(150, () => {
+      const close = () => { this.input.keyboard.off('keydown', close); bg.off('pointerdown', close); g.destroy(!0); this.creditsOpen = !1; };
       this.input.keyboard.once('keydown', close); bg.once('pointerdown', close);
     });
   }
@@ -504,7 +539,7 @@ class PlayScene extends Phaser.Scene {
     this.input.addPointer(4); // 5 simultaneous touch pointers
     this.SURFACE_Y = 473;
     const L = this.currentLevel, isL2 = L === 2, isL3 = L === 3, isL4 = L === 4, isL5 = L === 5, isL6 = L === 6, isL7 = L === 7, isDesert = isL3 || isL4;
-    document.body.style.backgroundColor = isL7 ? '#2a1a3a' : (isL6 ? '#10162a' : (isL5 ? '#111122' : (isL4 ? '#0a1020' : (isL2 ? '#162244' : (isDesert ? '#88ccff' : '#5c94fc')))));
+    document.body.style.backgroundColor = isL7 ? '#2a1a3a' : (isL6 ? '#10162a' : (isL5 ? '#111122' : (isL4 ? '#0a1020' : (isL2 ? '#071118' : (isDesert ? '#88ccff' : '#5c94fc')))));
     this.LEVEL_WIDTH = isL7 ? 9600 : (isL6 ? 9200 : (isL5 ? 8900 : (isL4 ? 7500 : (isL3 ? 7100 : (isL2 ? 5800 : 4700)))));
     const TILE = 54;
     this.gameOverFlag = this.isPaused = this.isSettingsOpen = this.isHurt = this.isAutoWalking = this.standingAtGate = this.walkingInsideCastle = this.invulnerable = !1;
@@ -533,6 +568,13 @@ class PlayScene extends Phaser.Scene {
         const p = this.add.circle(Phaser.Math.Between(0, 960), Phaser.Math.Between(-540, this.SURFACE_Y), Phaser.Math.FloatBetween(2.5, 4.5), 0xffffff, Phaser.Math.FloatBetween(0.4, 0.8)).setScrollFactor(0).setDepth(34);
         p.vx = Phaser.Math.Between(-30, -5); p.vy = Phaser.Math.Between(30, 80); return p;
       });
+    } else if (isL2) {
+      // Direct Fullscreen Level 2 Jungle Night BG
+      this.skyBg = this.textures.exists('level2-bg') ? this.add.tileSprite(0, 0, this.scale.width, 540, 'level2-bg').setOrigin(0).setScrollFactor(0) : this.add.rectangle(0, 0, this.scale.width, 540, 0x071118).setOrigin(0).setScrollFactor(0);
+      if (this.skyBg.tileScaleY && this.textures.exists('level2-bg')) {
+        const sc = 540 / this.textures.get('level2-bg').getSourceImage().height;
+        this.skyBg.tileScaleY = sc; this.skyBg.tileScaleX = sc;
+      }
     } else if (isDesert) {
       this.skyBg = this.textures.exists('desert-bg') ? this.add.tileSprite(0, 0, this.scale.width, 540, 'desert-bg').setOrigin(0).setScrollFactor(0) : this.add.rectangle(0, 0, this.scale.width, 540, 0x88ccff).setOrigin(0).setScrollFactor(0);
       if (this.skyBg.tileScaleY && this.textures.exists('desert-bg')) { const sc = 540 / this.textures.get('desert-bg').getSourceImage().height; this.skyBg.tileScaleY = sc; this.skyBg.tileScaleX = sc; }
@@ -541,8 +583,7 @@ class PlayScene extends Phaser.Scene {
       if (this.skyBg.tileScaleY) { this.skyBg.tileScaleY = 540 / 434; this.skyBg.tileScaleX = 540 / 434; }
     }
 
-    if (isL2) this.skyBg.setTint(0x162244);
-    else if (isL4) {
+    if (isL4) {
       this.skyBg.setTint(0x0a1020);
       this.add.circle(this.scale.width * 0.58, 115, 60, 0x0a1020, 1).setScrollFactor(0).setDepth(1);
       this.add.circle(this.scale.width * 0.58 - 15, 105, 35, 0xffeecc, 1).setScrollFactor(0).setDepth(2);
@@ -552,9 +593,10 @@ class PlayScene extends Phaser.Scene {
         this.tweens.add({ targets: dot, alpha: 0.1, duration: Phaser.Math.Between(500, 1500), yoyo: !0, repeat: -1 });
       }
     }
-    if (!isDesert && !isL5 && !isL6 && !isL7 && this.textures.exists('ground-deco')) {
+    
+    // decoBg rendered for level 1 only (excluded on level 2 jungle to prevent clashing)
+    if (!isDesert && !isL5 && !isL6 && !isL7 && !isL2 && this.textures.exists('ground-deco')) {
       this.decoBg = this.add.tileSprite(0, this.SURFACE_Y - 18, this.scale.width, 180, 'ground-deco').setOrigin(0, 1).setScrollFactor(0.35, 0).setScale(0.95);
-      if (isL2) this.decoBg.setTint(0x557799);
     }
 
     ['groundGroup', 'floorGroup', 'qblockGroup', 'qSensors', 'checkpointGroup', 'flagGroup', 'castleRoofGroup'].forEach(g => this[g] = this.physics.add.staticGroup());
@@ -859,11 +901,12 @@ class PlayScene extends Phaser.Scene {
       spawnE('turtle', 1000, 75, this.SURFACE_Y, 1, 160);
       spawnE('turtle', stairX + 4 * TILE, 300, this.SURFACE_Y - 5 * TILE, -1, 110);
     } else {
+      // Level 1: Pure Mushrooms Only (Turtles replaced) | Level 2: Original Turtles + Mushrooms Balance
       const enList = (isL5 ? [[700, 100, 'm'], [1200, 110, 'bear'], [2200, 100, 'm'], [2800, 110, 'bear'], [3400, 110, 'bear'], [4200, 350, 'bear'], [4400, 350, 'bear'], [5000, 100, 'm'], [6300, 350, 'bear'], [6450, 350, 'bear'], [7200, 110, 'bear']]
         : (isL4 ? [[350, 100, 'camel'], [650, 100, 'm'], [1450, 110, 'camel'], [1750, 100, 'm'], [4450, 100, 'm'], [4750, 110, 'camel'], [4980, 60, 'm'], [5800, 100, 'camel']]
         : (isL3 ? [[380, 100, 'camel'], [680, 100, 'm'], [1500, 110, 'camel'], [1800, 100, 'm'], [2650, 110, 'camel'], [2950, 100, 'm'], [3800, 110, 'camel'], [4100, 100, 'm'], [4950, 110, 'camel'], [5250, 100, 'm']]
         : (isL2 ? [[400, 80, 'm'], [600, 90, 'turtle'], [1160, 100, 'm'], [1480, 90, 'turtle'], [1980, 100, 'm'], [2260, 90, 'turtle'], [2620, 100, 'm'], [2900, 90, 'turtle'], [3350, 100, 'm'], [3600, 100, 'turtle'], [3800, 90, 'm']]
-        : [[400, 80, 'm'], [600, 90, 'turtle'], [1160, 100, 'm'], [1480, 90, 'turtle'], [1980, 100, 'm'], [2260, 90, 'turtle'], [2620, 100, 'm'], [2900, 90, 'turtle']]))));
+        : [[400, 80, 'm'], [600, 90, 'm'], [1160, 100, 'm'], [1480, 100, 'm'], [1980, 100, 'm'], [2260, 100, 'm'], [2620, 100, 'm'], [2900, 100, 'm']]))));
       enList.forEach(([x, r, k]) => spawnE(k, x, r));
     }
 
@@ -954,15 +997,12 @@ class PlayScene extends Phaser.Scene {
 
     const W = this.scale.width, H = this.scale.height;
 
-    // Helper to render transparent circular touch button
     const makeCircularBtn = (x, y, radius, label, subLabel, baseColor, onDown, onUp) => {
       const g = this.add.graphics().setScrollFactor(0).setDepth(500);
       const draw = (pressed) => {
         g.clear();
-        // Translucent fill
         g.fillStyle(pressed ? 0xffcc00 : baseColor, pressed ? 0.70 : 0.28);
         g.fillCircle(x, y, radius);
-        // Clean crisp border
         g.lineStyle(pressed ? 4 : 2, pressed ? 0xffea00 : 0xffffff, pressed ? 0.95 : 0.55);
         g.strokeCircle(x, y, radius);
       };
@@ -980,12 +1020,11 @@ class PlayScene extends Phaser.Scene {
       this.touchControlGraphics.push({ g, txt, subTxt, zone });
     };
 
-    // --- LEFT SIDE: 2 Large Isolated Buttons (No collision gap) ---
+    // Left Controls
     makeCircularBtn(72, H - 75, 42, '◀', '', 0x111122, () => { window.touchInput.left = !0; }, () => { window.touchInput.left = !1; });
     makeCircularBtn(178, H - 75, 42, '▶', '', 0x111122, () => { window.touchInput.right = !0; }, () => { window.touchInput.right = !1; });
 
-    // --- RIGHT SIDE: Duck Toggle + Shoot + Big Jump ---
-    // 1. Duck / Crawl Toggle Button (Permanent shrink toggle)
+    // Right Controls
     const duckG = this.add.graphics().setScrollFactor(0).setDepth(500);
     const duckRadius = 34, duckX = W - 225, duckY = H - 72;
     this.redrawDuckToggleBtn = () => {
@@ -1013,10 +1052,7 @@ class PlayScene extends Phaser.Scene {
       synth.beep(this.isDuckToggled ? 440 : 330, 0.08, 'triangle', 0.12);
     });
 
-    // 2. Shoot Action Button
     makeCircularBtn(W - 150, H - 145, 33, '🏹', '', 0xdd2222, () => { window.touchInput.shoot = !0; }, () => { window.touchInput.shoot = !1; });
-
-    // 3. Super-Sized High-Priority Jump Button
     makeCircularBtn(W - 75, H - 78, 48, '▲', 'JUMP', 0x059669, () => {
       window.touchInput.jump = !0;
       this.touchJumpBuffered = !0;
@@ -1453,7 +1489,7 @@ class PlayScene extends Phaser.Scene {
       }
       return;
     }
-    this.isDuckToggled = !1; // Reset duck mode on flag reached
+    this.isDuckToggled = !1;
     const ballY = this.SURFACE_Y - 258;
     this.add.circle(this.flagZone.x, ballY, 12, 0xffea00, 1).setDepth(22);
     const glowAura = this.add.circle(this.flagZone.x, ballY, 30, 0xffcc00, 0.6).setDepth(21);
@@ -1520,8 +1556,8 @@ class PlayScene extends Phaser.Scene {
   showGameCompletedOverlay() {
     this.canProceedLevel = !1; const W = this.scale.width, H = this.scale.height, bx = W * 0.28;
     this.add.rectangle(bx, H / 2, 430, 340, 0x0d0718, 0.90).setStrokeStyle(3, 0xffcc00).setScrollFactor(0).setDepth(600);
-    this.add.text(bx, H / 2 - 95, '🏆 GAME BEATEN! 🏆', { fontFamily: 'Arial Black', fontSize: '26px', color: '#ffcc00', stroke: '#7a2fbf', strokeThickness: 6, align: 'center' }).setOrigin(0.5).setScrollFactor(0).setDepth(601);
-    this.add.text(bx, H / 2 - 10, `CONGRATULATIONS!\nFINAL SCORE: ${this.score}`, { fontFamily: 'Arial', fontSize: '19px', color: '#fff', align: 'center', stroke: '#000', strokeThickness: 3 }).setOrigin(0.5).setScrollFactor(0).setDepth(601);
+    this.add.text(bx, H / 2 - 95, '🏆 REALM CONQUERED! 🏆', { fontFamily: 'Arial Black', fontSize: '26px', color: '#ffcc00', stroke: '#7a2fbf', strokeThickness: 6, align: 'center' }).setOrigin(0.5).setScrollFactor(0).setDepth(601);
+    this.add.text(bx, H / 2 - 10, `CONGRATULATIONS!\nFINAL SCORE: ${this.score}\nCREATED BY VAIBHAV JAIN`, { fontFamily: 'Arial', fontSize: '18px', color: '#fff', align: 'center', stroke: '#000', strokeThickness: 3 }).setOrigin(0.5).setScrollFactor(0).setDepth(601);
     const pBtn = this.add.text(bx, H / 2 + 75, 'MAIN MENU\n(TAP OR ENTER)', { fontFamily: 'Arial Black', fontSize: '15px', color: '#fff', backgroundColor: '#7a2fbf', align: 'center', padding: { x: 16, y: 8 } }).setOrigin(0.5).setScrollFactor(0).setDepth(601).setInteractive({ useHandCursor: !0 });
     pBtn.on('pointerdown', () => this.scene.start('TitleScene'));
   }
