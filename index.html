@@ -46,14 +46,40 @@
       max-height: 100%;
     }
 
-    /* Rotate Device Alert for Portrait */
+    /* Floating Universal Fullscreen Toggle */
+    #global-fs-btn {
+      position: fixed;
+      top: 12px;
+      right: 14px;
+      z-index: 99999;
+      background: rgba(0, 0, 0, 0.65);
+      border: 2px solid #ffd700;
+      color: #ffd700;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 6px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      touch-action: none;
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    #global-fs-btn:active {
+      background: rgba(255, 215, 0, 0.3);
+      transform: scale(0.92);
+    }
+
+    /* Rotate Device Prompt for Portrait */
     #rotate-warning {
       display: none;
       position: fixed;
       inset: 0;
       background: #0b0f19;
       color: #ffcc00;
-      z-index: 100000;
+      z-index: 1000000;
       flex-direction: column;
       justify-content: center;
       align-items: center;
@@ -66,6 +92,11 @@
     @media screen and (orientation: portrait) {
       #rotate-warning { display: flex; }
     }
+
+    /* Hide fullscreen toggle on mouse devices */
+    @media (hover: hover) and (pointer: fine) {
+      #global-fs-btn { display: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -75,8 +106,30 @@
     <p>Landscape mode is required for full screen gameplay.</p>
   </div>
 
+  <button id="global-fs-btn">⛶ FULLSCREEN</button>
+
   <div id="game-container"></div>
 
+  <script>
+    const fsBtn = document.getElementById('global-fs-btn');
+    const toggleFS = () => {
+      if (!document.fullscreenElement) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    };
+    if (fsBtn) {
+      fsBtn.addEventListener('click', toggleFS);
+      fsBtn.addEventListener('touchend', (e) => { e.preventDefault(); toggleFS(); });
+    }
+  </script>
   <script src="game.js"></script>
 </body>
 </html>

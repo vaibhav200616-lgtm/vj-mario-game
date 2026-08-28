@@ -1,7 +1,7 @@
 /* =====================================================================
-   MY MARIO (VJ WORLD) — game.js (Native Multi-Pointer Engine & Indian Levels)
+   MY MARIO (VJ WORLD) — game.js (Ergonomic Mobile Layout & Duck Toggle)
    ===================================================================== */
-window.touchInput = { left: !1, right: !1, up: !1, down: !1, jump: !1, shoot: !1 };
+window.touchInput = { left: !1, right: !1, jump: !1, shoot: !1 };
 window.gameSettings = { playerSpeed: 240, bgmEnabled: !0, sfxEnabled: !0 };
 
 document.addEventListener('pointerdown', () => {
@@ -281,7 +281,7 @@ class BootScene extends Phaser.Scene {
             if (d[idx] > 248 && d[idx + 1] > 248 && d[idx + 2] > 248) d[idx + 3] = 0;
             else if (d[idx + 3] > 20) { if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
           }
-          if (minX > maxX) { minX = 0; maxX = fw - 1; minY = 0; maxY = cH - 1; }
+          if (minX > maxX) { minX = 0; maxX = fw - 1; minY = 0; maxY = fh - 1; }
           const cropW = maxX - minX + 1, cropH = maxY - minY + 1, fcan = document.createElement('canvas'); fcan.width = fw; fcan.height = cH; fcan.getContext('2d').putImageData(tctx.getImageData(i * fw, 0, fw, cH), 0, 0);
           const sc = Math.min((oh - 4) / cropH, (ow - 4) / cropW), tw_s = Math.round(cropW * sc), th_s = Math.round(cropH * sc);
           cs.drawImage(fcan, minX, minY, cropW, cropH, i * ow + Math.round((ow - tw_s) / 2), oh - th_s, tw_s, th_s);
@@ -458,7 +458,6 @@ class LevelSelectScene extends Phaser.Scene {
     this.add.text(W / 2, 45, 'CHOOSE LEVEL', { fontFamily: 'Arial Black', fontSize: '38px', color: '#ffcc00', stroke: '#7a2fbf', strokeThickness: 7 }).setOrigin(0.5);
     const startX = W / 2 - 280, startY = 160;
     
-    // Indian-English Authentic Themed Names
     const badges = [
       { name: 'LEVEL 1', sub: 'SHIVALIK HILLS' },
       { name: 'LEVEL 2', sub: 'SUNDERBANS NIGHT' },
@@ -499,10 +498,10 @@ class PlayScene extends Phaser.Scene {
   init(d) {
     this.currentLevel = d.currentLevel || 1; this.score = d.currentScore || 0; this.lives = d.currentLives !== undefined ? d.currentLives : 5;
     this.hasArrows = !1; this.starAmmo = 0; this.gemsCollected = 0; this.totalGems = 5; this.collectedTypes = new Set(); this.jumpCount = 0; this.isShooting = !1;
-    this.touchJumpBuffered = !1;
+    this.isDuckToggled = !1; this.touchJumpBuffered = !1;
   }
   create() {
-    this.input.addPointer(3); // 4 Multi-Touch Fingers Active
+    this.input.addPointer(4); // 5 simultaneous touch pointers
     this.SURFACE_Y = 473;
     const L = this.currentLevel, isL2 = L === 2, isL3 = L === 3, isL4 = L === 4, isL5 = L === 5, isL6 = L === 6, isL7 = L === 7, isDesert = isL3 || isL4;
     document.body.style.backgroundColor = isL7 ? '#2a1a3a' : (isL6 ? '#10162a' : (isL5 ? '#111122' : (isL4 ? '#0a1020' : (isL2 ? '#162244' : (isDesert ? '#88ccff' : '#5c94fc')))));
@@ -932,7 +931,7 @@ class PlayScene extends Phaser.Scene {
     const pbtn = this.add.text(this.scale.width - 20, 52, '⚙️', { fontFamily: 'Arial', fontSize: '24px' }).setOrigin(1, 0).setScrollFactor(0).setDepth(101).setInteractive({ useHandCursor: !0 });
     pbtn.on('pointerdown', () => this.togglePauseMenu());
 
-    this.setupTouchControls();
+    this.setupErgonomicTouchControls();
 
     this.timerEvent = this.time.addEvent({
       delay: 1000, loop: !0, callback: () => {
@@ -948,37 +947,77 @@ class PlayScene extends Phaser.Scene {
     ['keydown-SPACE', 'keydown-ENTER'].forEach(e => this.input.keyboard.on(e, proc));
   }
 
-  setupTouchControls() {
-    this.touchBtns = [];
+  setupErgonomicTouchControls() {
+    this.touchControlGraphics = [];
     const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     if (!isTouch) return;
 
-    const createBtn = (x, y, w, h, icon, col, onDown, onUp) => {
+    const W = this.scale.width, H = this.scale.height;
+
+    // Helper to render transparent circular touch button
+    const makeCircularBtn = (x, y, radius, label, subLabel, baseColor, onDown, onUp) => {
       const g = this.add.graphics().setScrollFactor(0).setDepth(500);
-      const draw = (press) => {
+      const draw = (pressed) => {
         g.clear();
-        g.fillStyle(press ? 0xffcc00 : col, press ? 0.75 : 0.35);
-        g.fillRoundedRect(x - w / 2, y - h / 2, w, h, 14);
-        g.lineStyle(2, press ? 0xffea00 : 0xffffff, 0.6);
-        g.strokeRoundedRect(x - w / 2, y - h / 2, w, h, 14);
+        // Translucent fill
+        g.fillStyle(pressed ? 0xffcc00 : baseColor, pressed ? 0.70 : 0.28);
+        g.fillCircle(x, y, radius);
+        // Clean crisp border
+        g.lineStyle(pressed ? 4 : 2, pressed ? 0xffea00 : 0xffffff, pressed ? 0.95 : 0.55);
+        g.strokeCircle(x, y, radius);
       };
       draw(!1);
-      const txt = this.add.text(x, y, icon, { fontFamily: 'Arial Black', fontSize: '22px', color: '#ffffff' }).setOrigin(0.5).setScrollFactor(0).setDepth(501);
-      const hit = this.add.zone(x, y, w + 16, h + 16).setScrollFactor(0).setDepth(502).setInteractive({ useHandCursor: !0 });
-      hit.on('pointerdown', () => { draw(!0); onDown(); });
-      hit.on('pointerup', () => { draw(!1); onUp(); });
-      hit.on('pointerout', () => { draw(!1); onUp(); });
-      this.touchBtns.push({ g, txt, hit });
+      const txt = this.add.text(x, y - (subLabel ? 5 : 0), label, { fontFamily: 'Arial Black', fontSize: `${Math.round(radius * 0.62)}px`, color: '#ffffff' }).setOrigin(0.5).setScrollFactor(0).setDepth(501);
+      let subTxt = null;
+      if (subLabel) {
+        subTxt = this.add.text(x, y + radius * 0.42, subLabel, { fontFamily: 'Arial Black', fontSize: '9px', color: '#ffea00' }).setOrigin(0.5).setScrollFactor(0).setDepth(501);
+      }
+
+      const zone = this.add.zone(x, y, radius * 2.2, radius * 2.2).setScrollFactor(0).setDepth(502).setInteractive({ useHandCursor: !0 });
+      zone.on('pointerdown', () => { draw(!0); onDown(); });
+      zone.on('pointerup', () => { draw(!1); onUp(); });
+      zone.on('pointerout', () => { draw(!1); onUp(); });
+      this.touchControlGraphics.push({ g, txt, subTxt, zone });
     };
 
-    // Left D-Pad Controls
-    createBtn(65, 480, 68, 54, '◀', 0x222222, () => { window.touchInput.left = !0; }, () => { window.touchInput.left = !1; });
-    createBtn(145, 480, 68, 54, '▼', 0x333333, () => { window.touchInput.down = !0; }, () => { window.touchInput.down = !1; });
-    createBtn(225, 480, 68, 54, '▶', 0x222222, () => { window.touchInput.right = !0; }, () => { window.touchInput.right = !1; });
+    // --- LEFT SIDE: 2 Large Isolated Buttons (No collision gap) ---
+    makeCircularBtn(72, H - 75, 42, '◀', '', 0x111122, () => { window.touchInput.left = !0; }, () => { window.touchInput.left = !1; });
+    makeCircularBtn(178, H - 75, 42, '▶', '', 0x111122, () => { window.touchInput.right = !0; }, () => { window.touchInput.right = !1; });
 
-    // Right Action Buttons (Shoot & Large Jump Pad)
-    createBtn(this.scale.width - 165, 480, 68, 58, '🏹', 0xdd2222, () => { window.touchInput.shoot = !0; }, () => { window.touchInput.shoot = !1; });
-    createBtn(this.scale.width - 75, 475, 80, 68, '▲', 0x00aa44, () => {
+    // --- RIGHT SIDE: Duck Toggle + Shoot + Big Jump ---
+    // 1. Duck / Crawl Toggle Button (Permanent shrink toggle)
+    const duckG = this.add.graphics().setScrollFactor(0).setDepth(500);
+    const duckRadius = 34, duckX = W - 225, duckY = H - 72;
+    this.redrawDuckToggleBtn = () => {
+      duckG.clear();
+      if (this.isDuckToggled) {
+        duckG.fillStyle(0xffaa00, 0.75);
+        duckG.fillCircle(duckX, duckY, duckRadius);
+        duckG.lineStyle(4, 0xffea00, 1.0);
+        duckG.strokeCircle(duckX, duckY, duckRadius);
+      } else {
+        duckG.fillStyle(0x334155, 0.32);
+        duckG.fillCircle(duckX, duckY, duckRadius);
+        duckG.lineStyle(2, 0xffffff, 0.55);
+        duckG.strokeCircle(duckX, duckY, duckRadius);
+      }
+    };
+    this.redrawDuckToggleBtn();
+    const duckTxt = this.add.text(duckX, duckY - 4, '▼', { fontFamily: 'Arial Black', fontSize: '20px', color: '#ffffff' }).setOrigin(0.5).setScrollFactor(0).setDepth(501);
+    this.duckSubTxt = this.add.text(duckX, duckY + 14, 'CRAWL', { fontFamily: 'Arial Black', fontSize: '8px', color: '#ffffff' }).setOrigin(0.5).setScrollFactor(0).setDepth(501);
+    const duckZone = this.add.zone(duckX, duckY, duckRadius * 2.3, duckRadius * 2.3).setScrollFactor(0).setDepth(502).setInteractive({ useHandCursor: !0 });
+    duckZone.on('pointerdown', () => {
+      this.isDuckToggled = !this.isDuckToggled;
+      this.redrawDuckToggleBtn();
+      this.duckSubTxt.setColor(this.isDuckToggled ? '#000000' : '#ffffff');
+      synth.beep(this.isDuckToggled ? 440 : 330, 0.08, 'triangle', 0.12);
+    });
+
+    // 2. Shoot Action Button
+    makeCircularBtn(W - 150, H - 145, 33, '🏹', '', 0xdd2222, () => { window.touchInput.shoot = !0; }, () => { window.touchInput.shoot = !1; });
+
+    // 3. Super-Sized High-Priority Jump Button
+    makeCircularBtn(W - 75, H - 78, 48, '▲', 'JUMP', 0x059669, () => {
       window.touchInput.jump = !0;
       this.touchJumpBuffered = !0;
     }, () => { window.touchInput.jump = !1; });
@@ -1060,7 +1099,6 @@ class PlayScene extends Phaser.Scene {
     }
 
     if (this.currentLevel === 6) {
-      // Immediate Water Drop Check
       if (this.player.y > this.SURFACE_Y + 12 && !this.isHurt && !this.isAutoWalking) {
         synth.waterSplash();
         this.damagePlayer();
@@ -1165,17 +1203,17 @@ class PlayScene extends Phaser.Scene {
 
     const left = this.cursors.left.isDown || this.keys.A.isDown || window.touchInput.left;
     const right = this.cursors.right.isDown || this.keys.D.isDown || window.touchInput.right;
-    const down = this.cursors.down.isDown || this.keys.S.isDown || window.touchInput.down;
+    const isDuckActive = this.cursors.down.isDown || this.keys.S.isDown || this.isDuckToggled;
     const shoot = Phaser.Input.Keyboard.JustDown(this.keys.X) || window.touchInput.shoot;
     const onGround = this.player.body.blocked.down || this.player.body.touching.down, spd = window.gameSettings.playerSpeed;
 
     if (onGround) this.jumpCount = 0;
     const jumpK = Phaser.Input.Keyboard.JustDown(this.cursors.up) || Phaser.Input.Keyboard.JustDown(this.keys.W) || Phaser.Input.Keyboard.JustDown(this.keys.SPACE);
     const jumpHit = jumpK || this.touchJumpBuffered;
-    this.touchJumpBuffered = !1; // Reset instant jump trigger
+    this.touchJumpBuffered = !1;
 
     if (!this.isHurt) {
-      if (down) { this.player.setScale(0.68, 0.44); this.player.body.setSize(36, 50).setOffset(52, 90); }
+      if (isDuckActive) { this.player.setScale(0.68, 0.44); this.player.body.setSize(36, 50).setOffset(52, 90); }
       else { this.player.setScale(0.80, 0.80); this.player.body.setSize(36, 90).setOffset(52, 50); }
 
       if (left && !right) { this.player.setVelocityX(-spd); this.player.facing = -1; this.player.setFlipX(!0); if (onGround && !this.isShooting) this.player.play('walk', !0); }
@@ -1385,6 +1423,14 @@ class PlayScene extends Phaser.Scene {
     if (this.invulnerable) return;
     this.lives--; synth.hurt(); this.updateHearts();
     if (this.lives <= 0) { this.triggerGameOver(); return; }
+    
+    // Auto-Reset Duck Toggle on Respawn
+    this.isDuckToggled = !1;
+    if (this.redrawDuckToggleBtn) {
+      this.redrawDuckToggleBtn();
+      if (this.duckSubTxt) this.duckSubTxt.setColor('#ffffff');
+    }
+
     this.player.body.reset(this.lastCheckpointX, this.lastCheckpointY);
     this.player.setVelocity(0, 0); this.isHurt = !0; this.player.play('hurt', !0);
     this.time.delayedCall(400, () => { this.isHurt = !1; });
@@ -1407,6 +1453,7 @@ class PlayScene extends Phaser.Scene {
       }
       return;
     }
+    this.isDuckToggled = !1; // Reset duck mode on flag reached
     const ballY = this.SURFACE_Y - 258;
     this.add.circle(this.flagZone.x, ballY, 12, 0xffea00, 1).setDepth(22);
     const glowAura = this.add.circle(this.flagZone.x, ballY, 30, 0xffcc00, 0.6).setDepth(21);
