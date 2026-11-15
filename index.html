@@ -130,6 +130,23 @@
       fsBtn.addEventListener('touchend', (e) => { e.preventDefault(); toggleFS(); });
     }
   </script>
-  <script src="game.js"></script>
+  <!-- Level Data (must load before PlayScene) -->
+  <script src="levels/level1.js"></script>
+  <script src="levels/level2.js"></script>
+  <script src="levels/level3.js"></script>
+  <script src="levels/level4.js"></script>
+  <script src="levels/level5.js"></script>
+  <script src="levels/level6.js"></script>
+  <script src="levels/level7.js"></script>
+
+  <!-- Audio Engine -->
+  <script src="audio.js"></script>
+
+  <!-- Scene Modules -->
+  <script src="menus.js"></script>
+  <script src="PlayScene.js"></script>
+
+  <!-- Game Entry Point -->
+  <script src="main.js"></script>
 </body>
 </html>
