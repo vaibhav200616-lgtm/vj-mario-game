@@ -13,8 +13,36 @@ document.addEventListener('pointerdown', () => {
 }, { once: !0 });
 
 window.phaserGame = new Phaser.Game({
-  type: Phaser.AUTO, width: 960, height: 540, parent: 'game-container', backgroundColor: '#000000', pixelArt: !1,
-  physics: { default: 'arcade', arcade: { gravity: { y: 1000 }, debug: !1 } },
-  scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
+  type: Phaser.AUTO,
+  width: 960,
+  height: 540,
+  parent: 'game-container',
+  backgroundColor: '#000000',
+  pixelArt: false,
+  roundPixels: true,
+  render: {
+    powerPreference: 'high-performance',
+    batchSize: 4096,
+    desynchronized: true
+  },
+  physics: {
+    default: 'arcade',
+    arcade: {
+      gravity: { y: 1000 },
+      debug: false,
+      fps: 60,
+      fixedStep: true,
+      tileBias: 32
+    }
+  },
+  fps: {
+    target: 60,
+    min: 30,
+    forceSetTimeOut: false
+  },
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
   scene: [BootScene, TapToStartScene, StoryVideoScene, TitleScene, LevelSelectScene, PlayScene]
 });

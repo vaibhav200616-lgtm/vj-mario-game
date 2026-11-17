@@ -14,6 +14,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&display=swap" rel="stylesheet">
 
+  <!-- Early Pre-buffer Videos for Instant 0-Delay Playback -->
+  <link rel="preload" href="assets/story.mp4" as="video" type="video/mp4">
+  <link rel="preload" href="assets/title_bg.mp4" as="video" type="video/mp4">
+
   <style>
     * {
       box-sizing: border-box;
@@ -209,6 +213,12 @@
 </head>
 <body>
 
+  <!-- Fullscreen Hardware-Accelerated Story Video Player (0ms delay, zero freeze, instant 1-tap skip) -->
+  <div id="story-video-container" style="display:none;position:fixed;inset:0;width:100vw;height:100dvh;background:#000000;z-index:999998;align-items:center;justify-content:center;cursor:pointer;">
+    <video id="story-video-el" src="assets/story.mp4" playsinline webkit-playsinline style="width:100%;height:100%;max-width:100vw;max-height:100dvh;object-fit:contain;background:#000000;outline:none;"></video>
+    <div id="story-skip-btn" style="position:fixed;top:18px;right:20px;background:rgba(12,7,20,0.88);border:1.8px solid #ffd700;color:#ffd700;font-family:'Arial Black',sans-serif;font-size:12px;padding:8px 18px;border-radius:8px;cursor:pointer;z-index:999999;user-select:none;-webkit-user-select:none;box-shadow:0 4px 12px rgba(0,0,0,0.6);">SKIP ⏭️</div>
+  </div>
+
   <!-- Instant Royal Splash Screen (0ms Load Time - Renders Instantly On Open) -->
   <div id="instant-splash">
     <div class="splash-box">
@@ -247,12 +257,115 @@
       fsBtn.addEventListener('touchend', (e) => { e.preventDefault(); toggleFS(); });
     }
 
-    // Instant Start Controller (Mouse, Touchpad, Mobile Single-Tap, Enter, Spacebar)
+    // Instant Start & Story Controller (Single-tap start -> Single-tap skip -> Menu Home)
     window.gameReady = false;
     window.userStarted = false;
+    window.storyVideoActive = false;
+    let storyDoneCallback = null;
+
+    window.playStoryVideo = function(onDone) {
+      window.storyVideoActive = true;
+      storyDoneCallback = onDone || null;
+
+      if (window.synth) {
+        window.synth.stopMenuBGM();
+      }
+
+      const container = document.getElementById('story-video-container');
+      const video = document.getElementById('story-video-el');
+      if (container && video) {
+        container.style.display = 'flex';
+        video.currentTime = 0;
+        video.muted = false;
+        video.volume = 1.0;
+        const playPromise = video.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            // Auto-fallback with unmuting if restricted
+            video.muted = true;
+            video.play().then(() => { video.muted = false; }).catch(() => {});
+          });
+        }
+      }
+    };
+
+    window.skipStoryVideo = function() {
+      if (!window.storyVideoActive) return;
+      window.storyVideoActive = false;
+
+      const container = document.getElementById('story-video-container');
+      const video = document.getElementById('story-video-el');
+      if (video) {
+        try {
+          video.pause();
+          video.currentTime = 0;
+        } catch (e) {}
+      }
+      if (container) {
+        container.style.display = 'none';
+      }
+
+      // Ensure Phaser is showing TitleScene with Menu BGM
+      if (window.phaserGame?.scene) {
+        if (!window.phaserGame.scene.isActive('TitleScene')) {
+          window.phaserGame.scene.start('TitleScene');
+        }
+      }
+
+      if (window.startTitleVideoWhenReady) {
+        window.startTitleVideoWhenReady();
+        window.startTitleVideoWhenReady = null;
+      }
+
+      if (window.synth) {
+        window.synth.playMenuBGM();
+      }
+
+      if (storyDoneCallback) {
+        const cb = storyDoneCallback;
+        storyDoneCallback = null;
+        cb();
+      }
+    };
+
+    // Story video interaction handlers (tap anywhere or SKIP button -> immediate main menu)
+    const storyContainer = document.getElementById('story-video-container');
+    const storyVid = document.getElementById('story-video-el');
+    const storySkip = document.getElementById('story-skip-btn');
+
+    if (storyContainer) {
+      storyContainer.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.skipStoryVideo();
+      });
+      storyContainer.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        window.skipStoryVideo();
+      });
+    }
+    if (storySkip) {
+      storySkip.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.skipStoryVideo();
+      });
+      storySkip.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        window.skipStoryVideo();
+      });
+    }
+    if (storyVid) {
+      storyVid.addEventListener('ended', () => {
+        window.skipStoryVideo();
+      });
+    }
 
     window.handleUserStart = function() {
-      if (window.userStarted) return;
+      if (window.userStarted) {
+        if (window.storyVideoActive) {
+          window.skipStoryVideo();
+        }
+        return;
+      }
       window.userStarted = true;
 
       if (window.synth) {
@@ -263,28 +376,16 @@
         document.documentElement.requestFullscreen().catch(() => {});
       }
 
+      // Hide start splash screen immediately
       const splash = document.getElementById('instant-splash');
       if (splash) splash.classList.add('hidden');
 
-      const triggerScene = () => {
-        if (window.phaserGame?.scene) {
-          window.phaserGame.scene.stop('TapToStartScene');
-          window.phaserGame.scene.start('StoryVideoScene');
-        } else if (window.bootSceneRef?.scene) {
-          window.bootSceneRef.scene.start('StoryVideoScene');
+      // Start story video immediately on user click gesture (NO lag, NO freeze!)
+      window.playStoryVideo(() => {
+        if (window.phaserGame?.scene && !window.phaserGame.scene.isActive('TitleScene')) {
+          window.phaserGame.scene.start('TitleScene');
         }
-      };
-
-      if (window.phaserGame || window.bootSceneRef) {
-        triggerScene();
-      } else {
-        const waitInterval = setInterval(() => {
-          if (window.phaserGame || window.bootSceneRef) {
-            clearInterval(waitInterval);
-            triggerScene();
-          }
-        }, 15);
-      }
+      });
     };
 
     const splashEl = document.getElementById('instant-splash');
@@ -295,8 +396,12 @@
     }
 
     window.addEventListener('keydown', (e) => {
-      if (e.code === 'Enter' || e.code === 'Space' || e.key === 'Enter' || e.key === ' ' || !window.userStarted) {
-        window.handleUserStart();
+      if (e.code === 'Enter' || e.code === 'Space' || e.key === 'Enter' || e.key === ' ') {
+        if (!window.userStarted) {
+          window.handleUserStart();
+        } else if (window.storyVideoActive) {
+          window.skipStoryVideo();
+        }
       }
     });
   </script>

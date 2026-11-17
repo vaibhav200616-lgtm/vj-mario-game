@@ -1,4 +1,4 @@
-﻿/* =====================================================================
+/* =====================================================================
    THE LEGEND OF VJ — PlayScene.js
    Main gameplay scene — reads level config from window.LEVEL_DATA[n]
    ===================================================================== */
@@ -45,7 +45,7 @@ class PlayScene extends Phaser.Scene {
     } else if (isL5) {
       this.skyBg = this.textures.exists('snow-bg') ? this.add.tileSprite(0, 0, this.scale.width, 540, 'snow-bg').setOrigin(0).setScrollFactor(0) : this.add.rectangle(0, 0, this.scale.width, 540, 0x111122).setOrigin(0).setScrollFactor(0);
       if (this.skyBg.tileScaleY && this.textures.exists('snow-bg')) { const sc = 540 / this.textures.get('snow-bg').getSourceImage().height; this.skyBg.tileScaleY = sc; this.skyBg.tileScaleX = sc; }
-      this.snowParticles = Array.from({ length: 150 }, () => {
+      this.snowParticles = Array.from({ length: 55 }, () => {
         const p = this.add.circle(Phaser.Math.Between(0, 960), Phaser.Math.Between(-540, this.SURFACE_Y), Phaser.Math.FloatBetween(2.5, 4.5), 0xffffff, Phaser.Math.FloatBetween(0.4, 0.8)).setScrollFactor(0).setDepth(34);
         p.vx = Phaser.Math.Between(-30, -5); p.vy = Phaser.Math.Between(30, 80); return p;
       });
@@ -57,13 +57,13 @@ class PlayScene extends Phaser.Scene {
       }
       // Aesthetic Thunderstorm Slanted High-Pressure Rainfall in Background (Depth 1, between skyBg and world)
       this.rainGfx = this.add.graphics().setScrollFactor(0).setDepth(1);
-      this.rainDrops = Array.from({ length: 240 }, () => ({
+      this.rainDrops = Array.from({ length: 75 }, () => ({
         x: Phaser.Math.Between(-100, 1060),
         y: Phaser.Math.Between(-100, 560),
-        len: Phaser.Math.Between(26, 44),
-        spd: Phaser.Math.Between(950, 1400),
-        alpha: Phaser.Math.FloatBetween(0.35, 0.75),
-        thick: Phaser.Math.FloatBetween(1.2, 1.9)
+        len: Phaser.Math.Between(34, 52),
+        spd: Phaser.Math.Between(1000, 1450),
+        alpha: Phaser.Math.FloatBetween(0.4, 0.8),
+        thick: Phaser.Math.FloatBetween(1.4, 2.0)
       }));
       // Lightning flash backdrop overlay (depth 2) and realistic lightning bolt graphics (depth 200)
       this.lightningOverlay = this.add.rectangle(0, 0, this.scale.width, 540, 0xd8eeff, 0).setOrigin(0).setScrollFactor(0).setDepth(2);
@@ -125,10 +125,9 @@ class PlayScene extends Phaser.Scene {
         if (isL2) topSlab.setDepth(10);
         if (isDesert || isL5) { topSlab.body.setSize(108, 44); topSlab.body.setOffset(0, 10); }
         topSlab.refreshBody();
-        const botSlab = this.groundGroup.create(x, this.SURFACE_Y + 81, texKey);
+        const botSlab = this.add.image(x, this.SURFACE_Y + 81, texKey);
         botSlab.setDisplaySize(slabW + 1, 55);
         if (isL2) botSlab.setDepth(10);
-        botSlab.refreshBody();
       }
     };
 
@@ -405,8 +404,8 @@ class PlayScene extends Phaser.Scene {
       const s = this.starGroup.create(x, starY, 'tile-star').setScale(0.65).setDepth(25);
       if (s.body) {
         s.body.setSize(38, 38);
+        s.body.immovable = true;
       }
-      this.tweens.add({ targets: s, y: starY - 8, duration: 650, yoyo: !0, repeat: -1, ease: 'Sine.easeInOut' });
     });
 
     const heart = this.heartGroup.create(isL7 ? 5950 : (isL6 ? 4700 : (isL5 ? 4000 : (isL4 ? 2000 : (isL3 ? 3200 : (isL2 ? 2400 : 1800))))), isL7 ? 230 : this.SURFACE_Y - 140, 'item-heart');
@@ -539,9 +538,14 @@ class PlayScene extends Phaser.Scene {
       });
     }
 
-    this.cameras.main.startFollow(this.player, !0, 0.12, 0.12).setDeadzone(120, 100);
+    this.cameras.main.startFollow(this.player, true, 0.12, 0.08).setDeadzone(40, 20);
+    this.cameras.main.setRoundPixels(true);
 
-    [this.groundGroup, this.floorGroup, this.movingFloorGroup, this.castleRoofGroup, this.qblockGroup, this.treeObstacleGroup, this.lilypadGroup, this.fishFountainPlatformGroup, this.whiteCloudGroup, this.greyCloudGroup].forEach(g => this.physics.add.collider(this.player, g, (p, c) => this.onCloudLand(p, c)));
+    // High-performance solid colliders (zero callback overhead)
+    [this.groundGroup, this.floorGroup, this.movingFloorGroup, this.castleRoofGroup, this.qblockGroup, this.treeObstacleGroup, this.lilypadGroup, this.fishFountainPlatformGroup, this.greyCloudGroup].forEach(g => this.physics.add.collider(this.player, g));
+    // Dynamic spring-cloud bounce collider (only for white clouds)
+    this.physics.add.collider(this.player, this.whiteCloudGroup, (p, c) => this.onCloudLand(p, c));
+
     [this.groundGroup, this.floorGroup, this.treeObstacleGroup].forEach(g => {
       this.physics.add.collider(this.turtleGroup, g);
       this.physics.add.collider(this.mushroomGroup, g);
@@ -658,6 +662,7 @@ class PlayScene extends Phaser.Scene {
     synth.startBGM(this, this.currentLevel);
     this.events.once('shutdown', () => {
       synth.stopBGM();
+      window.touchInput = { left: !1, right: !1, jump: !1, shoot: !1 };
       this.input.keyboard.removeAllListeners();
       this.tweens.killAll();
       this.time.removeAllEvents();
@@ -1106,7 +1111,12 @@ class PlayScene extends Phaser.Scene {
 
       if (left && !right) { this.player.setVelocityX(-spd); this.player.facing = -1; this.player.setFlipX(!0); if (onGround && !this.isShooting) this.player.play('walk', !0); }
       else if (right && !left) { this.player.setVelocityX(spd); this.player.facing = 1; this.player.setFlipX(!1); if (onGround && !this.isShooting) this.player.play('walk', !0); }
-      else { this.player.setVelocityX(this.player.body.velocity.x * 0.82); if (onGround && !this.isShooting) { this.player.play('idle', !0); this.player.setFlipX(this.player.facing === -1); } }
+      else {
+        const curVx = this.player.body.velocity.x;
+        if (Math.abs(curVx) < 6) this.player.setVelocityX(0);
+        else this.player.setVelocityX(curVx * 0.80);
+        if (onGround && !this.isShooting) { this.player.play('idle', !0); this.player.setFlipX(this.player.facing === -1); }
+      }
 
       if (jumpHit) {
         if (onGround || this.jumpCount === 0) { this.player.setVelocityY(-720); synth.jump(); this.jumpCount = 1; }
@@ -1246,15 +1256,27 @@ class PlayScene extends Phaser.Scene {
   }
 
   updatePatrol(g) {
+    if (!g || !this.player) return;
     const now = this.time.now;
+    const px = this.player.x;
     g.children.iterate(e => {
-      if (!e?.active || e.isShell || e.isDead) return;
+      if (!e?.active || e.isShell || e.isDead || !e.body) return;
+
+      // Distance culling: Skip offscreen enemies far from player to prevent CPU lag
+      if (Math.abs(e.x - px) > 1100) {
+        if (e.body.velocity.x !== 0) e.setVelocityX(0);
+        return;
+      }
 
       // Immediate direction reversal on physical obstacle collision
       if (e.body.blocked.right) {
         e.dir = -1; e.setFlipX(!0); e.nextTurn = now + 150;
+        e.x -= 2;
+        e.stuckCounter = 0;
       } else if (e.body.blocked.left) {
         e.dir = 1; e.setFlipX(!1); e.nextTurn = now + 150;
+        e.x += 2;
+        e.stuckCounter = 0;
       } else if (!e.nextTurn || now >= e.nextTurn) {
         if (e.x >= e.homeX + e.range) {
           e.dir = -1; e.setFlipX(!0); e.nextTurn = now + 150;
@@ -1266,10 +1288,10 @@ class PlayScene extends Phaser.Scene {
       // Anti-stuck watchdog: If enemy stands still or gets wedged, unstick immediately
       if (Math.abs(e.body.velocity.x) < 2) {
         e.stuckCounter = (e.stuckCounter || 0) + 1;
-        if (e.stuckCounter > 6) {
+        if (e.stuckCounter > 4) {
           e.dir = (e.dir === 1) ? -1 : 1;
           e.setFlipX(e.dir === -1);
-          e.setVelocityX(e.dir * e.speed);
+          e.x += e.dir * 4;
           e.stuckCounter = 0;
           e.nextTurn = now + 200;
         }

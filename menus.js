@@ -17,7 +17,6 @@ class BootScene extends Phaser.Scene {
 
     // 2. Full AI Artwork Menu Backgrounds & World Textures
     [
-      ['title_bg', 'title_bg.png'],
       ['level_bg', 'level_bg.png'],
       ['howto_bg', 'howto_bg.png'],
       ['credits_img', 'credits.png'],
@@ -412,6 +411,11 @@ class BootScene extends Phaser.Scene {
     }
 
     const genG = (k, w, h, fn) => { if (this.textures.exists(k)) return; const g = this.make.graphics({ x: 0, y: 0, add: !1 }); fn(g); g.generateTexture(k, w, h); g.destroy(); };
+    // Royal Deep Navy Title Backdrop (prevents any Level 1 bg-sky glitch)
+    genG('title_backdrop', 960, 540, g => {
+      g.fillGradientStyle(0x0a0718, 0x0a0718, 0x030208, 0x030208, 1);
+      g.fillRect(0, 0, 960, 540);
+    });
     genG('checkpoint-inactive', 56, 92, g => {
       // Sleek beveled silver-steel base pedestal
       g.fillStyle(0x1a202c, 1);
@@ -734,180 +738,27 @@ class BootScene extends Phaser.Scene {
     window.bootSceneRef = this;
     window.gameReady = true;
 
-    if (window.userStarted) {
-      const splash = document.getElementById('instant-splash');
-      if (splash) splash.classList.add('hidden');
-      this.scene.start('StoryVideoScene');
-    } else {
-      this.scene.start('TapToStartScene');
-    }
+    // BootScene transitions cleanly to TitleScene (Story Video runs seamlessly on top)
+    this.scene.start('TitleScene');
   }
 }
 
 class TapToStartScene extends Phaser.Scene {
   constructor() { super('TapToStartScene'); }
   create() {
-    synth.stopMenuBGM();
-    document.body.style.backgroundColor = '#000000';
-    const W = this.scale.width, H = this.scale.height;
-
-    // Pitch-black backdrop
-    this.add.rectangle(W / 2, H / 2, W, H, 0x000000).setOrigin(0.5).setDepth(0);
-
-    // Hide HTML splash if Phaser's TapToStartScene takes over directly
-    const splash = document.getElementById('instant-splash');
-    if (splash) splash.classList.add('hidden');
-
-    // Royal Crown (Top)
-    this.add.text(W / 2, H / 2 - 40, '👑', { fontSize: '42px' }).setOrigin(0.5).setDepth(10);
-
-    // POWERED BY VJ WORLD (BADA, Center, Royal Gold, NO GLOW)
-    this.add.text(W / 2, H / 2 + 12, '✦ POWERED BY VJ WORLD ✦', {
-      fontFamily: "Cinzel, 'Arial Black', serif",
-      fontSize: '40px',
-      color: '#ffd700',
-      fontStyle: 'bold',
-      stroke: '#180900',
-      strokeThickness: 5
-    }).setOrigin(0.5).setDepth(10);
-
-    // STUDIOS • ROYAL EDITION
-    this.add.text(W / 2, H / 2 + 48, 'STUDIOS  •  ROYAL EDITION', {
-      fontFamily: "'Arial Black', sans-serif",
-      fontSize: '12px',
-      color: '#d4af37',
-      letterSpacing: 4
-    }).setOrigin(0.5).setDepth(10);
-
-    let started = !1;
-    const startGame = () => {
-      if (started) return;
-      started = !0;
-      synth.getCtx();
-      const splash = document.getElementById('instant-splash');
-      if (splash) splash.classList.add('hidden');
-      this.cameras.main.fade(200, 0, 0, 0, !1, (c, p) => {
-        if (p === 1) this.scene.start('StoryVideoScene');
-      });
-    };
-
-    this.input.once('pointerdown', startGame);
-    this.input.keyboard.on('keydown-SPACE', startGame);
-    this.input.keyboard.on('keydown-ENTER', startGame);
-    this.input.keyboard.once('keydown', startGame);
+    this.scene.start('TitleScene');
   }
 }
 
 class StoryVideoScene extends Phaser.Scene {
   constructor() { super('StoryVideoScene'); }
   create() {
-    synth.stopMenuBGM();
-    const W = this.scale.width, H = this.scale.height;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x000000).setDepth(0);
-    this.isTransitioning = !1;
-
-    try {
-      this.videoObj = this.add.video(W / 2, H / 2).setOrigin(0.5).setMute(!1).setVolume(1.0).setDepth(1);
-      this.videoObj.loadURL('assets/story.mp4', !1);
-      const fit = () => {
-        if (this.videoObj?.video?.videoWidth > 0) {
-          this.videoObj.setScale(Math.min(W / this.videoObj.video.videoWidth, H / this.videoObj.video.videoHeight));
-        }
-      };
-      this.videoObj.on('play', fit);
-      this.videoObj.on('unlocked', fit);
-      this.time.addEvent({ delay: 100, repeat: 10, callback: fit });
-      this.videoObj.on('complete', () => this.goToTitle());
-      if (this.videoObj.video) {
-        this.videoObj.video.addEventListener('ended', () => this.goToTitle());
-      }
-      this.videoObj.play();
-    } catch (e) {
-      this.goToTitle();
-    }
-
-    // Skip prompt at bottom (original behavior: 2-tap to skip)
-    this.skipPrompt = this.add.text(W / 2, H - 35, '', {
-      fontFamily: 'Arial Black',
-      fontSize: '14px',
-      color: '#ffcc00',
-      stroke: '#000000',
-      strokeThickness: 4
-    }).setOrigin(0.5).setAlpha(0).setDepth(100);
-
-    const onSkip = () => {
-      this.goToTitle();
-    };
-    ['keydown-SPACE', 'keydown-ENTER'].forEach(e => this.input.keyboard.on(e, onSkip));
-    this.input.on('pointerdown', onSkip);
-
-    // Sleek direct SKIP button at top-right
-    const skipBtn = this.add.container(W - 65, 30).setDepth(100);
-    const sGfx = this.add.graphics();
-    sGfx.fillStyle(0x0c0714, 0.80);
-    sGfx.fillRoundedRect(-45, -16, 90, 32, 8);
-    sGfx.lineStyle(1.8, 0xffd700, 0.9);
-    sGfx.strokeRoundedRect(-45, -16, 90, 32, 8);
-    const sTxt = this.add.text(0, 0, 'SKIP ⏭️', {
-      fontFamily: 'Arial Black',
-      fontSize: '12px',
-      color: '#ffd700'
-    }).setOrigin(0.5);
-    skipBtn.add([sGfx, sTxt]);
-    skipBtn.setSize(90, 32);
-    skipBtn.setInteractive({ useHandCursor: !0 });
-    skipBtn.on('pointerdown', (p, x, y, event) => {
-      if (event) event.stopPropagation();
-      this.goToTitle();
-    });
-  }
-
-  update() {
-    if (this.videoObj?.video?.videoWidth > 0) {
-      const sc = Math.min(this.scale.width / this.videoObj.video.videoWidth, this.scale.height / this.videoObj.video.videoHeight);
-      if (Math.abs(this.videoObj.scaleX - sc) > 0.001) this.videoObj.setScale(sc);
-    }
-  }
-
-  goToTitle() {
-    if (this.isTransitioning) return;
-    this.isTransitioning = !0;
-    synth.getCtx();
-
-    const proceed = () => {
-      this.cameras.main.fade(280, 0, 0, 0, !1, (c, p) => {
-        if (p === 1) {
-          if (this.videoObj) {
-            try {
-              if (this.videoObj.video) {
-                this.videoObj.video.pause();
-                this.videoObj.video.removeAttribute('src');
-                this.videoObj.video.src = '';
-                this.videoObj.video.load();
-              }
-              this.videoObj.stop();
-              this.videoObj.destroy();
-              this.videoObj = null;
-            } catch (e) {}
-          }
-          this.scene.start('TitleScene');
-        }
+    if (window.playStoryVideo) {
+      window.playStoryVideo(() => {
+        this.scene.start('TitleScene');
       });
-    };
-
-    if (window.gameReady) {
-      proceed();
     } else {
-      const waitTimer = this.time.addEvent({
-        delay: 50,
-        loop: true,
-        callback: () => {
-          if (window.gameReady) {
-            waitTimer.remove();
-            proceed();
-          }
-        }
-      });
+      this.scene.start('TitleScene');
     }
   }
 }
@@ -920,61 +771,80 @@ class TitleScene extends Phaser.Scene {
     this.activeModal = null;
     const W = this.scale.width, H = this.scale.height;
 
-    // Continuous Menu BGM (home bgm.mp3) across home, settings, credits, controls & level select
-    synth.playMenuBGM();
+    // Continuous Menu BGM (home bgm.mp3) only if story video is not currently playing on top
+    if (!window.storyVideoActive) {
+      synth.playMenuBGM();
+    }
 
-    // 1. Ultra-High 4K Video / Image Title Background
-    const titleBgImg = this.textures.exists('title_bg') ? 'title_bg' : 'bg-sky';
-    const fallbackBg = this.add.image(W / 2, H / 2, titleBgImg).setDisplaySize(W, H).setDepth(0);
+    // 1. Ultra-High 4K Video / Royal Deep Navy Title Background (Zero bg-sky flash)
+    const fallbackBg = this.textures.exists('title_backdrop')
+      ? this.add.image(W / 2, H / 2, 'title_backdrop').setDisplaySize(W, H).setDepth(0)
+      : this.add.rectangle(W / 2, H / 2, W, H, 0x080b14).setOrigin(0.5).setDepth(0);
 
-    try {
-      const bgVid = this.add.video(W / 2, H / 2).setOrigin(0.5).setMute(!0).setDepth(1).setAlpha(0);
-      bgVid.loadURL('assets/title_bg.mp4', !0);
-      let crossfaded = !1;
-      const fitVideo = () => {
-        if (bgVid?.video?.videoWidth > 0) {
-          const sc = Math.max(W / bgVid.video.videoWidth, H / bgVid.video.videoHeight);
-          bgVid.setScale(sc);
-          if (!crossfaded && bgVid.video.currentTime > 0.05) {
-            crossfaded = !0;
-            this.tweens.add({
-              targets: bgVid,
-              alpha: 1,
-              duration: 300,
-              ease: 'Linear',
-              onComplete: () => {
-                fallbackBg.setVisible(!1);
-              }
-            });
+    const startBgVideo = () => {
+      try {
+        if (this.bgVid) return;
+        this.bgVid = this.add.video(W / 2, H / 2).setOrigin(0.5).setMute(!0).setDepth(1).setAlpha(0);
+        this.bgVid.loadURL('assets/title_bg.mp4', !0);
+        let crossfaded = !1;
+        const fitVideo = () => {
+          if (this.bgVid?.video?.videoWidth > 0) {
+            const sc = Math.max(W / this.bgVid.video.videoWidth, H / this.bgVid.video.videoHeight);
+            this.bgVid.setScale(sc);
+            if (!crossfaded && this.bgVid.video.currentTime > 0.05) {
+              crossfaded = !0;
+              this.tweens.add({
+                targets: this.bgVid,
+                alpha: 1,
+                duration: 300,
+                ease: 'Linear',
+                onComplete: () => {
+                  if (fallbackBg && fallbackBg.active) fallbackBg.setVisible(!1);
+                }
+              });
+            }
           }
+        };
+        this.bgVid.on('play', fitVideo);
+        this.bgVid.on('unlocked', fitVideo);
+        if (this.bgVid.video) {
+          this.bgVid.video.loop = !0;
+          this.bgVid.video.muted = !0;
+          this.bgVid.video.playsInline = !0;
+          this.bgVid.video.setAttribute('playsinline', '');
+          this.bgVid.video.setAttribute('webkit-playsinline', '');
+          this.bgVid.video.addEventListener('loadeddata', fitVideo);
+          this.bgVid.video.addEventListener('timeupdate', fitVideo);
         }
-      };
-      bgVid.on('play', fitVideo);
-      bgVid.on('unlocked', fitVideo);
-      if (bgVid.video) {
-        bgVid.video.loop = !0;
-        bgVid.video.muted = !0;
-        bgVid.video.playsInline = !0;
-        bgVid.video.setAttribute('playsinline', '');
-        bgVid.video.setAttribute('webkit-playsinline', '');
-        bgVid.video.addEventListener('loadeddata', fitVideo);
-        bgVid.video.addEventListener('timeupdate', fitVideo);
-      }
-      bgVid.play(!0);
-      this.time.addEvent({ delay: 100, repeat: 10, callback: fitVideo });
-      this.events.once('shutdown', () => {
-        try {
-          if (bgVid.video) {
-            bgVid.video.pause();
-            bgVid.video.removeAttribute('src');
-            bgVid.video.src = '';
-            bgVid.video.load();
+        this.bgVid.play(!0);
+        this.time.addEvent({ delay: 150, repeat: 8, callback: fitVideo });
+      } catch (e) {}
+    };
+
+    if (!window.storyVideoActive) {
+      startBgVideo();
+    } else {
+      window.startTitleVideoWhenReady = startBgVideo;
+    }
+
+    this.events.once('shutdown', () => {
+      try {
+        if (this.bgVid) {
+          if (this.bgVid.video) {
+            this.bgVid.video.pause();
+            this.bgVid.video.removeAttribute('src');
+            this.bgVid.video.src = '';
+            this.bgVid.video.load();
           }
-          bgVid.stop();
-          bgVid.destroy();
-        } catch (e) {}
-      });
-    } catch (e) {}
+          this.bgVid.stop();
+          this.bgVid.destroy();
+          this.bgVid = null;
+        }
+      } catch (e) {}
+      this.input.keyboard.removeAllListeners();
+      this.tweens.killAll();
+      this.time.removeAllEvents();
+    });
 
     // 2. Left-Bottom Corner: Character (assets/player shoot.png) - Smooth gentle bounce & interactive tap
     const pTexture = this.textures.exists('player_shoot_title') ? 'player_shoot_title' : 'player_shoot';
@@ -1142,8 +1012,11 @@ class TitleScene extends Phaser.Scene {
     makeMenuBtn(colX, y4, bW, itemH, 'STORY', !1, () => {
       if (!this.activeModal) {
         synth.getCtx();
-        synth.stopMenuBGM();
-        this.scene.start('StoryVideoScene');
+        if (window.playStoryVideo) {
+          window.playStoryVideo(() => {
+            synth.playMenuBGM();
+          });
+        }
       }
     });
     makeMenuBtn(colX, y5, bW, itemH, 'CREDITS', !1, () => this.showCredits());
@@ -1558,9 +1431,29 @@ class TitleScene extends Phaser.Scene {
         document.exitFullscreen().catch(() => {});
       }
       closeModal();
-      this.add.text(W / 2, H / 2, 'THANK YOU FOR PLAYING!\n★ VJ WORLD STUDIOS ★', {
-        fontFamily: 'Arial Black', fontSize: '22px', color: '#ffd700', stroke: '#000', strokeThickness: 6, align: 'center'
-      }).setOrigin(0.5).setDepth(500);
+
+      // Multi-step browser tab closure with graceful fallbacks
+      try {
+        window.close();
+      } catch (e) {}
+
+      try {
+        window.open('', '_self', '');
+        window.close();
+      } catch (e) {}
+
+      setTimeout(() => {
+        try {
+          window.location.href = 'about:blank';
+        } catch (e) {
+          document.body.innerHTML = `
+            <div style="background:#000000;color:#ffd700;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Cinzel',sans-serif;text-align:center;">
+              <h1 style="font-size:32px;margin-bottom:12px;">✦ GAME CLOSED ✦</h1>
+              <p style="color:#a0aec0;font-size:16px;">You may safely close this browser tab.</p>
+            </div>
+          `;
+        }
+      }, 120);
     });
 
     g.addMultiple([bg, card, title, prompt, cancelBtn, quitBtn]);
@@ -1575,7 +1468,7 @@ class LevelSelectScene extends Phaser.Scene {
     const W = this.scale.width, H = this.scale.height;
 
     // Full screen AI Artwork level background
-    const lvlBgKey = this.textures.exists('level_bg') ? 'level_bg' : 'bg-sky';
+    const lvlBgKey = this.textures.exists('level_bg') ? 'level_bg' : 'title_backdrop';
     this.add.image(W / 2, H / 2, lvlBgKey).setDisplaySize(W, H).setDepth(0);
 
     // Exact card coordinates for 10 cards mapped from level_bg artwork
