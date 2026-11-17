@@ -37,8 +37,8 @@ window.LEVEL_DATA[1] = {
   // Obstacles (tree trunks etc): [x, height, texKey?]
   obstacles: [[660, 115], [1600, 145]],
 
-  // Stars x positions
-  stars: [300, 420, 1100, 1450, 1750, 2100, 2600, 2900],
+  // Stars x positions (25 collectible stars evenly distributed in open air)
+  stars: [220, 320, 440, 560, 720, 800, 960, 1050, 1180, 1380, 1460, 1550, 1680, 1800, 1920, 2050, 2180, 2300, 2420, 2580, 2680, 2800, 2880, 2940, 2990],
 
   // Heart pickup x (y auto-computed)
   heartX: 1800,

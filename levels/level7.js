@@ -59,7 +59,8 @@ window.LEVEL_DATA[7] = {
   // Ground-sky transition: player x range for bg fade
   groundTransition: { startX: 5900, endX: 8650 },
 
-  stars: [400, 900, 2000, 3300, 4500, 5950, 7100, 8150],
+  // Stars x positions (26 collectible stars evenly distributed)
+  stars: [350, 650, 950, 1300, 1650, 2000, 2350, 2700, 3050, 3400, 3750, 4100, 4450, 4800, 5150, 5500, 5850, 6200, 6550, 6900, 7250, 7600, 7950, 8250, 8550, 8750],
 
   heartX: 5950,
 

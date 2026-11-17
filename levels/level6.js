@@ -44,7 +44,8 @@ window.LEVEL_DATA[6] = {
 
   checkpoints: [500, 8550], // only 2 real checkpoints on ground
 
-  stars: [300, 700, 1450, 3100, 3500, 5100, 6100, 7900],
+  // Stars x positions (25 collectible stars evenly distributed)
+  stars: [300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2750, 3100, 3450, 3800, 4200, 4600, 5000, 5400, 5800, 6200, 6600, 7000, 7400, 7750, 8050, 8250, 8400],
 
   heartX: 4700,
 
