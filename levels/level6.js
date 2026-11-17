@@ -1,12 +1,12 @@
 /* =====================================================================
    THE LEGEND OF VJ — levels/level6.js
-   Level 6: JAL MAHAL PALACE (Water)
+   Level 6: Jal Mahal
    ===================================================================== */
 
 window.LEVEL_DATA = window.LEVEL_DATA || {};
 
 window.LEVEL_DATA[6] = {
-  name: 'JAL MAHAL PALACE',
+  name: 'Jal Mahal',
   bgColor: '#10162a',
   bgKey: 'water-bg',
   levelWidth: 9200,

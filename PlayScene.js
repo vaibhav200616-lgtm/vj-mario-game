@@ -380,7 +380,7 @@ class PlayScene extends Phaser.Scene {
       });
     }
 
-    const starFallback = isL7 ? [350, 650, 950, 1300, 1650, 2000, 2350, 2700, 3050, 3400, 3750, 4100, 4450, 4800, 5150, 5500, 5850, 6200, 6550, 6900, 7250, 7600, 7950, 8250, 8550, 8750]
+    const starFallback = isL7 ? [450, 1050, 1400, 1620, 1880, 2120, 2350, 2550, 2850, 3180, 3420, 3630, 3830, 4080, 4330, 4550, 4750, 5050, 5350, 5550, 5800, 6150, 6450, 6650, 6930, 7280, 7550, 7800, 8050]
       : (isL6 ? [300, 600, 900, 1200, 1500, 1800, 2100, 2400, 2750, 3100, 3450, 3800, 4200, 4600, 5000, 5400, 5800, 6200, 6600, 7000, 7400, 7750, 8050, 8250, 8400]
       : (isL5 ? [250, 500, 750, 840, 1020, 1250, 1500, 1800, 2100, 2340, 2500, 2700, 3000, 3300, 3600, 3720, 3920, 4200, 4500, 4800, 5100, 5400, 5620, 6000, 6600, 7150]
       : (isL4 ? [250, 450, 680, 820, 1050, 1250, 1450, 1650, 1850, 2020, 2250, 2480, 2680, 2880, 3080, 3280, 3480, 3680, 3880, 4180, 4360, 4600, 4820, 5040, 5200, 5600, 5780]
@@ -394,7 +394,7 @@ class PlayScene extends Phaser.Scene {
       if (typeof pos === 'object' && pos !== null && pos.y !== undefined) {
         starY = pos.y;
       } else if (isL7) {
-        starY = (i % 2 === 0) ? 210 : 250;
+        starY = (i % 2 === 0) ? 190 : 230;
       } else if (isL6) {
         starY = (i % 2 === 0) ? 310 : 350;
       } else if (isL4 && x >= 2350 && x <= 3750) {
@@ -452,7 +452,7 @@ class PlayScene extends Phaser.Scene {
       spawnE('turtle', stairX + 4 * TILE, 300, this.SURFACE_Y - 5 * TILE, -1, 110);
     } else {
       const enList = (isL5 ? [[700, 90, 'm'], [1220, 140, 'bear'], [2150, 90, 'm'], [2500, 160, 'bear'], [3500, 140, 'bear'], [4250, 150, 'bear'], [4600, 110, 'bear'], [5300, 70, 'm'], [5550, 140, 'bear'], [6000, 150, 'bear'], [6450, 150, 'bear'], [6850, 130, 'bear']]
-        : (isL4 ? [[880, 80, 'm'], [1600, 110, 'camel'], [1950, 90, 'm'], [2700, 120, 'camel'], [3500, 120, 'camel'], [4450, 90, 'm'], [4700, 110, 'camel'], [5000, 50, 'm'], [5750, 70, 'camel']]
+        : (isL4 ? [[880, 80, 'm'], [1600, 110, 'camel'], [1950, 90, 'm'], [2700, 120, 'm'], [3500, 120, 'm'], [4450, 90, 'm'], [4700, 110, 'camel'], [5000, 50, 'm'], [5750, 70, 'camel']]
         : (isL3 ? [[540, 100, 'camel'], [840, 100, 'm'], [1500, 110, 'camel'], [1800, 100, 'm'], [2650, 110, 'camel'], [2950, 100, 'm'], [3800, 110, 'camel'], [4100, 100, 'm'], [4950, 110, 'camel'], [5250, 100, 'm']]
         : (isL2 ? [[400, 80, 'm'], [600, 90, 'turtle'], [1160, 100, 'm'], [1480, 90, 'turtle'], [1980, 100, 'm'], [2260, 90, 'turtle'], [2620, 100, 'm'], [2900, 90, 'turtle'], [3350, 100, 'm'], [3600, 100, 'turtle'], [3800, 90, 'm']]
         : [[400, 80, 'm'], [600, 90, 'm'], [1160, 100, 'm'], [1480, 100, 'm'], [1980, 100, 'm'], [2260, 100, 'm'], [2620, 100, 'm'], [2900, 100, 'm']]))));
@@ -656,7 +656,12 @@ class PlayScene extends Phaser.Scene {
 
     synth.stopMenuBGM();
     synth.startBGM(this, this.currentLevel);
-    this.events.once('shutdown', () => synth.stopBGM());
+    this.events.once('shutdown', () => {
+      synth.stopBGM();
+      this.input.keyboard.removeAllListeners();
+      this.tweens.killAll();
+      this.time.removeAllEvents();
+    });
     const proc = () => { if (this.canProceedLevel) { synth.getCtx(); this.scene.restart({ currentLevel: this.currentLevel + 1, currentScore: this.score, currentLives: this.lives }); } };
     ['keydown-SPACE', 'keydown-ENTER'].forEach(e => this.input.keyboard.on(e, proc));
   }
@@ -758,7 +763,6 @@ class PlayScene extends Phaser.Scene {
     }
     this.skyBg.tilePositionX = Math.floor(this.cameras.main.scrollX * 0.15);
     if (this.groundTransitionBg) this.groundTransitionBg.tilePositionX = Math.floor(this.cameras.main.scrollX * 0.15);
-    this.gemGroup.children.iterate(d => { if (d?.active && d.glowAura && d.glowAura.active) d.glowAura.setPosition(d.x, d.y); });
     const pPct = Math.max(0, Math.min(1, (this.player.x - 120) / (this.castleDoorX - 120)));
     this.drawJourneyBar(pPct);
 
@@ -893,6 +897,7 @@ class PlayScene extends Phaser.Scene {
 
     if (this.currentLevel === 2 && this.rainGfx && this.rainDrops) {
       this.rainGfx.clear();
+      this.rainGfx.lineStyle(1.8, 0x90caf9, 0.55);
       const slantX = 14; // high-pressure slanted angle
       this.rainDrops.forEach(d => {
         d.y += d.spd * (1 / 60);
@@ -902,7 +907,6 @@ class PlayScene extends Phaser.Scene {
           d.x = Phaser.Math.Between(0, 1060);
         }
         if (d.x < -80) d.x = 1040;
-        this.rainGfx.lineStyle(d.thick, 0x90caf9, d.alpha);
         const endY = Math.min(this.SURFACE_Y, d.y + d.len);
         if (endY > d.y) {
           this.rainGfx.lineBetween(d.x, d.y, d.x - (slantX * ((endY - d.y) / d.len)), endY);
@@ -1094,8 +1098,11 @@ class PlayScene extends Phaser.Scene {
     this.touchJumpBuffered = !1;
 
     if (!this.isHurt) {
-      if (isDuckActive) { this.player.setScale(0.68, 0.44); this.player.body.setSize(36, 50).setOffset(52, 90); }
-      else { this.player.setScale(0.80, 0.80); this.player.body.setSize(36, 90).setOffset(52, 50); }
+      if (this.lastDuckState !== isDuckActive) {
+        this.lastDuckState = isDuckActive;
+        if (isDuckActive) { this.player.setScale(0.68, 0.44); this.player.body.setSize(36, 50).setOffset(52, 90); }
+        else { this.player.setScale(0.80, 0.80); this.player.body.setSize(36, 90).setOffset(52, 50); }
+      }
 
       if (left && !right) { this.player.setVelocityX(-spd); this.player.facing = -1; this.player.setFlipX(!0); if (onGround && !this.isShooting) this.player.play('walk', !0); }
       else if (right && !left) { this.player.setVelocityX(spd); this.player.facing = 1; this.player.setFlipX(!1); if (onGround && !this.isShooting) this.player.play('walk', !0); }
@@ -1242,14 +1249,34 @@ class PlayScene extends Phaser.Scene {
     const now = this.time.now;
     g.children.iterate(e => {
       if (!e?.active || e.isShell || e.isDead) return;
-      const canTurn = !e.nextTurn || now >= e.nextTurn;
-      if (canTurn) {
-        if (e.body.blocked.right || e.x >= e.homeX + e.range) {
-          e.dir = -1; e.setFlipX(!0); e.nextTurn = now + 350;
-        } else if (e.body.blocked.left || e.x <= e.homeX - e.range) {
-          e.dir = 1; e.setFlipX(!1); e.nextTurn = now + 350;
+
+      // Immediate direction reversal on physical obstacle collision
+      if (e.body.blocked.right) {
+        e.dir = -1; e.setFlipX(!0); e.nextTurn = now + 150;
+      } else if (e.body.blocked.left) {
+        e.dir = 1; e.setFlipX(!1); e.nextTurn = now + 150;
+      } else if (!e.nextTurn || now >= e.nextTurn) {
+        if (e.x >= e.homeX + e.range) {
+          e.dir = -1; e.setFlipX(!0); e.nextTurn = now + 150;
+        } else if (e.x <= e.homeX - e.range) {
+          e.dir = 1; e.setFlipX(!1); e.nextTurn = now + 150;
         }
       }
+
+      // Anti-stuck watchdog: If enemy stands still or gets wedged, unstick immediately
+      if (Math.abs(e.body.velocity.x) < 2) {
+        e.stuckCounter = (e.stuckCounter || 0) + 1;
+        if (e.stuckCounter > 6) {
+          e.dir = (e.dir === 1) ? -1 : 1;
+          e.setFlipX(e.dir === -1);
+          e.setVelocityX(e.dir * e.speed);
+          e.stuckCounter = 0;
+          e.nextTurn = now + 200;
+        }
+      } else {
+        e.stuckCounter = 0;
+      }
+
       e.setVelocityX(e.dir * e.speed);
       if (e.enemyKind === 'bear' && e.anims && !e.anims.isPlaying && this.anims.exists('bear-walk')) {
         e.play('bear-walk', !0);
@@ -1528,7 +1555,9 @@ class PlayScene extends Phaser.Scene {
     if (!this.journeyFillGfx) return;
     if (isNaN(pct) || pct === null || pct === undefined) pct = 0;
     const clamped = Math.max(0, Math.min(1, pct));
-    const fillW = clamped * this.journeyBarW;
+    const fillW = Math.round(clamped * this.journeyBarW);
+    if (this.lastJourneyFillW !== undefined && Math.abs(fillW - this.lastJourneyFillW) < 1) return;
+    this.lastJourneyFillW = fillW;
     this.journeyFillGfx.clear();
     if (fillW > 3) {
       this.journeyFillGfx.fillStyle(0x00f0ff, 0.95);

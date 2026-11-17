@@ -1,12 +1,12 @@
 /* =====================================================================
    THE LEGEND OF VJ — levels/level2.js
-   Level 2: SUNDERBANS NIGHT
+   Level 2: Sundarbans Tempest
    ===================================================================== */
 
 window.LEVEL_DATA = window.LEVEL_DATA || {};
 
 window.LEVEL_DATA[2] = {
-  name: 'SUNDERBANS NIGHT',
+  name: 'Sundarbans Tempest',
   bgColor: '#071118',
   bgKey: 'level2-bg',
   levelWidth: 5800,

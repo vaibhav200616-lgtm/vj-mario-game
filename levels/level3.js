@@ -1,12 +1,12 @@
 /* =====================================================================
    THE LEGEND OF VJ — levels/level3.js
-   Level 3: THAR EXPEDITION (Desert)
+   Level 3: Thar Expedition
    ===================================================================== */
 
 window.LEVEL_DATA = window.LEVEL_DATA || {};
 
 window.LEVEL_DATA[3] = {
-  name: 'THAR EXPEDITION',
+  name: 'Thar Expedition',
   bgColor: '#88ccff',
   bgKey: 'desert-bg',
   levelWidth: 7100,

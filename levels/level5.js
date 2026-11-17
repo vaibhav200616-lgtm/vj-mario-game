@@ -1,12 +1,12 @@
 /* =====================================================================
    THE LEGEND OF VJ — levels/level5.js
-   Level 5: HIMALAYAN STORM (Snow)
+   Level 5: Himalayan Crown
    ===================================================================== */
 
 window.LEVEL_DATA = window.LEVEL_DATA || {};
 
 window.LEVEL_DATA[5] = {
-  name: 'HIMALAYAN STORM',
+  name: 'Himalayan Crown',
   bgColor: '#111122',
   bgKey: 'snow-bg',
   levelWidth: 8900,

@@ -50,6 +50,110 @@
       max-height: 100%;
     }
 
+    /* Instant Royal Splash Screen (0ms Load Time - Zero Blank Screen) */
+    #instant-splash {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100dvh;
+      background-color: #000000;
+      z-index: 999999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+    #instant-splash.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .splash-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 24px;
+      max-width: 92vw;
+    }
+    .splash-crown {
+      font-size: 36px;
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+    .splash-brand {
+      font-family: 'Cinzel', 'Arial Black', serif;
+      font-size: 40px;
+      font-weight: 900;
+      color: #ffd700;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 0 #180900, -2px -2px 0 #180900, 2px -2px 0 #180900, -2px 2px 0 #180900;
+      margin: 0;
+      padding: 0;
+      line-height: 1.15;
+    }
+    .splash-edition {
+      font-family: 'Arial Black', sans-serif;
+      font-size: 11px;
+      color: #d4af37;
+      letter-spacing: 4px;
+      margin-top: 6px;
+      text-transform: uppercase;
+    }
+    .splash-divider {
+      width: 240px;
+      height: 1.5px;
+      background: linear-gradient(90deg, transparent, #ffd700, transparent);
+      margin: 26px 0 20px 0;
+      position: relative;
+    }
+    .splash-divider::after {
+      content: '◆';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #ffd700;
+      font-size: 9px;
+      background: #000000;
+      padding: 0 4px;
+    }
+    .splash-tap-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: splashPulse 1.8s ease-in-out infinite;
+    }
+    .splash-tap {
+      font-family: 'Cinzel', 'Arial Black', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffeaa7;
+      letter-spacing: 1.5px;
+      text-shadow: 1px 1px 0 #180900, -1px -1px 0 #180900;
+      margin-bottom: 5px;
+    }
+    .splash-hint {
+      font-family: 'Arial Black', sans-serif;
+      font-size: 10px;
+      color: #bfa15f;
+      letter-spacing: 2px;
+    }
+    @keyframes splashPulse {
+      0%, 100% { transform: scale(1); opacity: 0.92; }
+      50% { transform: scale(1.05); opacity: 1; }
+    }
+    @media (max-width: 600px) {
+      .splash-crown { font-size: 28px; }
+      .splash-brand { font-size: 24px; }
+      .splash-tap { font-size: 14px; }
+      .splash-divider { width: 170px; margin: 18px 0 14px 0; }
+    }
+
     /* Floating Universal Fullscreen Toggle */
     #global-fs-btn {
       position: fixed;
@@ -105,6 +209,15 @@
 </head>
 <body>
 
+  <!-- Instant Royal Splash Screen (0ms Load Time - Renders Instantly On Open) -->
+  <div id="instant-splash">
+    <div class="splash-box">
+      <div class="splash-crown">👑</div>
+      <h1 class="splash-brand">✦ POWERED BY VJ WORLD ✦</h1>
+      <div class="splash-edition">STUDIOS • ROYAL EDITION</div>
+    </div>
+  </div>
+
   <div id="rotate-warning">
     <h2>📱 PLEASE ROTATE YOUR PHONE</h2>
     <p>Landscape mode is required for full screen gameplay.</p>
@@ -133,6 +246,59 @@
       fsBtn.addEventListener('click', toggleFS);
       fsBtn.addEventListener('touchend', (e) => { e.preventDefault(); toggleFS(); });
     }
+
+    // Instant Start Controller (Mouse, Touchpad, Mobile Single-Tap, Enter, Spacebar)
+    window.gameReady = false;
+    window.userStarted = false;
+
+    window.handleUserStart = function() {
+      if (window.userStarted) return;
+      window.userStarted = true;
+
+      if (window.synth) {
+        window.synth.getCtx();
+      }
+
+      if (!document.fullscreenElement && document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+
+      const splash = document.getElementById('instant-splash');
+      if (splash) splash.classList.add('hidden');
+
+      const triggerScene = () => {
+        if (window.phaserGame?.scene) {
+          window.phaserGame.scene.stop('TapToStartScene');
+          window.phaserGame.scene.start('StoryVideoScene');
+        } else if (window.bootSceneRef?.scene) {
+          window.bootSceneRef.scene.start('StoryVideoScene');
+        }
+      };
+
+      if (window.phaserGame || window.bootSceneRef) {
+        triggerScene();
+      } else {
+        const waitInterval = setInterval(() => {
+          if (window.phaserGame || window.bootSceneRef) {
+            clearInterval(waitInterval);
+            triggerScene();
+          }
+        }, 15);
+      }
+    };
+
+    const splashEl = document.getElementById('instant-splash');
+    if (splashEl) {
+      splashEl.addEventListener('click', () => window.handleUserStart());
+      splashEl.addEventListener('pointerdown', () => window.handleUserStart());
+      splashEl.addEventListener('touchstart', () => window.handleUserStart(), { passive: true });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Enter' || e.code === 'Space' || e.key === 'Enter' || e.key === ' ' || !window.userStarted) {
+        window.handleUserStart();
+      }
+    });
   </script>
   <!-- Level Data (must load before PlayScene) -->
   <script src="levels/level1.js"></script>

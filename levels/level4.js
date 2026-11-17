@@ -1,12 +1,12 @@
 /* =====================================================================
    THE LEGEND OF VJ — levels/level4.js
-   Level 4: KALINGA MIDNIGHT (Dark Desert)
+   Level 4: Lunar Dunes
    ===================================================================== */
 
 window.LEVEL_DATA = window.LEVEL_DATA || {};
 
 window.LEVEL_DATA[4] = {
-  name: 'KALINGA MIDNIGHT',
+  name: 'Lunar Dunes',
   bgColor: '#0a1020',
   bgKey: 'desert-bg',
   levelWidth: 7500,
@@ -42,7 +42,7 @@ window.LEVEL_DATA[4] = {
 
   enemies: [
     [880, 80, 'm'], [1600, 110, 'camel'], [1950, 90, 'm'],
-    [2700, 120, 'camel'], [3500, 120, 'camel'], [4450, 90, 'm'],
+    [2700, 120, 'm'], [3500, 120, 'm'], [4450, 90, 'm'],
     [4700, 110, 'camel'], [5000, 50, 'm'], [5750, 70, 'camel']
   ],
 

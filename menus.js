@@ -1,22 +1,45 @@
 ﻿/* =====================================================================
    THE LEGEND OF VJ — menus.js
-   PreBootScene, BootScene, StoryVideoScene, TitleScene, LevelSelectScene
-   Upgraded Royal-Modern UI Edition (VJ World Studios)
+   BootScene, TapToStartScene, StoryVideoScene, TitleScene, LevelSelectScene
+   Ultra-Fast Royal Modern Edition (VJ World Studios)
    ===================================================================== */
 
-class PreBootScene extends Phaser.Scene {
-  constructor() { super('PreBootScene'); }
+class BootScene extends Phaser.Scene {
+  constructor() { super('BootScene'); }
   preload() {
     this.load.on('loaderror', () => {});
+    document.body.style.backgroundColor = '#000000';
+    const W = this.scale.width, H = this.scale.height;
+    this.add.rectangle(0, 0, W, H, 0x000000).setOrigin(0);
+
+    // 1. Player animation sprite frames
     [['p-stand-vic', 'player stand victory.png'], ['p-run', 'player run.png'], ['p-jump-fall', 'player jump fall.png'], ['p-crawl-dead', 'player crawl dead.png'], ['p-shoot', 'player shoot.png']].forEach(([k, f]) => this.load.image(k, `assets/${f}`));
-    // Preload Intro Video, Story Video & Title Background Video with error immunity
-    try {
-      this.load.video('vj-intro', 'assets/vjworld_intro.mp4', 'loadeddata', !1, !1);
-      this.load.video('story-video', 'assets/story.mp4', 'loadeddata', !1, !1);
-      this.load.video('title-bg-video', 'assets/title_bg.mp4', 'loadeddata', !1, !1);
-    } catch (e) {}
+
+    // 2. Full AI Artwork Menu Backgrounds & World Textures
+    [
+      ['title_bg', 'title_bg.png'],
+      ['level_bg', 'level_bg.png'],
+      ['howto_bg', 'howto_bg.png'],
+      ['credits_img', 'credits.png'],
+      ['player_shoot', 'player shoot.png'],
+
+      // Gameplay & World Textures
+      ['tiles-raw', 'tiles.png'], ['grass-tiles-raw', 'grass tiles.png'], ['mystery-tile-raw', 'mystery tile.png'], ['green-gem-raw', 'green gem.png'], ['stone-tiles-raw', 'stone tiles.png'], ['ground-deco', 'ground.png'], ['bg-sky', 'bg-sky.jpg'], ['level2-bg', 'level2 bg.png'], ['castle-raw', 'castle.png'],
+      ['diamonds-raw', 'diamonds.png'], ['desert-bg', 'desert.png'], ['desert-tiles-raw', 'desert tiles.png'], ['desert-cactus-raw', 'desert cactus.png'],
+      ['desert-night-bg', 'desert night.jpeg'], ['desert-night-tiles-raw', 'desert night tiles.png'],
+      ['camel-raw', 'camel.png'], ['bear-raw', 'bear.png'], ['snow-elements-raw', 'snow element.png'],
+      ['snow-tiles-raw', 'snow tiles.png'], ['snow-bg', 'seamless_snow.png'],
+      ['water-bg', 'seamless_water bg.png'], ['water-tiles-raw', 'water tiles.png'], ['water-hurdles-raw', 'water hurdles trunk.png'],
+      ['crocodile-raw', 'crocodile.png'], ['water-enemy-raw', 'water enemy.png'],
+      ['air-bg', 'seamless_air bg.png'], ['air-cloud-tiles-raw', 'air cloud tiles.png'], ['air-eagle-raw', 'air eagle.png'], ['air-thunder-raw', 'air thunder.png'],
+      ['cave-raw', 'cave.png'], ['flag-raw', 'flag.png'],
+      ['turtle-raw', 'turtle.png'], ['mushroom-raw', 'mushroom.png']
+    ].forEach(([k, p]) => this.load.image(k, `assets/${p}`));
+
+    this.load.audio('custom-bgm', 'assets/bgm.mp3');
   }
   create() {
+    // Generate unified player canvas spritesheet
     const outW = 140, outH = 140;
     if (this.textures.exists('player')) this.textures.remove('player');
     const normCan = this.textures.createCanvas('player', outW * 8, outH), pCtx = normCan.getContext();
@@ -41,41 +64,6 @@ class PreBootScene extends Phaser.Scene {
     [['p-stand-vic', 2, 0, 0], ['p-run', 2, 0, 1], ['p-run', 2, 1, 2], ['p-jump-fall', 2, 0, 3], ['p-jump-fall', 2, 1, 4], ['p-crawl-dead', 2, 1, 5], ['p-stand-vic', 2, 1, 6], ['p-shoot', 1, 0, 7]].forEach(([k, sf, si, di]) => drawPFrame(k, sf, si, di));
     normCan.refresh(); const pTex = this.textures.get('player');
     for (let i = 0; i < 8; i++) pTex.add(i, 0, i * outW, 0, outW, outH);
-    this.anims.create({ key: 'load-run', frames: [{ key: 'player', frame: 1 }, { key: 'player', frame: 2 }], frameRate: 12, repeat: -1 });
-    this.scene.start('BootScene');
-  }
-}
-
-class BootScene extends Phaser.Scene {
-  constructor() { super('BootScene'); }
-  preload() {
-    const W = this.scale.width, H = this.scale.height;
-    this.add.rectangle(0, 0, W, H, 0x000000).setOrigin(0);
-
-    [
-      // Full AI Artwork Menu Backgrounds
-      ['title_bg', 'title_bg.png'],
-      ['level_bg', 'level_bg.png'],
-      ['howto_bg', 'howto_bg.png'],
-      ['credits_img', 'credits.png'],
-      ['player_shoot', 'player shoot.png'],
-
-      // Gameplay & World Textures
-      ['tiles-raw', 'tiles.png'], ['grass-tiles-raw', 'grass tiles.png'], ['mystery-tile-raw', 'mystery tile.png'], ['green-gem-raw', 'green gem.png'], ['stone-tiles-raw', 'stone tiles.png'], ['ground-deco', 'ground.png'], ['bg-sky', 'bg-sky.jpg'], ['level2-bg', 'level2 bg.png'], ['castle-raw', 'castle.png'],
-      ['diamonds-raw', 'diamonds.png'], ['desert-bg', 'desert.png'], ['desert-tiles-raw', 'desert tiles.png'], ['desert-cactus-raw', 'desert cactus.png'],
-      ['desert-night-bg', 'desert night.jpeg'], ['desert-night-tiles-raw', 'desert night tiles.png'],
-      ['camel-raw', 'camel.png'], ['bear-raw', 'bear.png'], ['snow-elements-raw', 'snow element.png'],
-      ['snow-tiles-raw', 'snow tiles.png'], ['snow-bg', 'seamless_snow.png'],
-      ['water-bg', 'seamless_water bg.png'], ['water-tiles-raw', 'water tiles.png'], ['water-hurdles-raw', 'water hurdles trunk.png'],
-      ['crocodile-raw', 'crocodile.png'], ['water-enemy-raw', 'water enemy.png'],
-      ['air-bg', 'seamless_air bg.png'], ['air-cloud-tiles-raw', 'air cloud tiles.png'], ['air-eagle-raw', 'air eagle.png'], ['air-thunder-raw', 'air thunder.png'],
-      ['cave-raw', 'cave.png'], ['flag-raw', 'flag.png'],
-      ['turtle-raw', 'turtle.png'], ['mushroom-raw', 'mushroom.png']
-    ].forEach(([k, p]) => this.load.image(k, `assets/${p}`));
-
-    this.load.audio('custom-bgm', 'assets/bgm.mp3');
-  }
-  create() {
     // Dynamic universal sprite slicer (bulletproof against any cropping/trimming of spritesheets)
     const makeDynamicSheet = (rawKey, outKey, cols) => {
       if (!this.textures.exists(rawKey)) return;
@@ -287,7 +275,7 @@ class BootScene extends Phaser.Scene {
     }
     if (this.textures.exists('desert-night-tiles-raw')) {
       const tw = this.textures.get('desert-night-tiles-raw').getSourceImage().width, th = this.textures.get('desert-night-tiles-raw').getSourceImage().height;
-      procCrop('desert-night-tiles-raw', [{ key: 'tile-night-sand-cube', rx: 0.02 * tw, ry: 0.04 * th, rw: 0.25 * tw, rh: 0.45 * th, ow: 54, oh: 54, bottomAlign: !1 }, { key: 'tile-night-sand-cuboid', rx: 0.26 * tw, ry: 0.04 * th, rw: 0.38 * tw, rh: 0.45 * th, ow: 108, oh: 54, bottomAlign: !1 }, { key: 'tile-night-cactus-trunk', rx: 0.65 * tw, ry: 0.06 * th, rw: 0.32 * tw, rh: 0.88 * th, ow: 85, oh: 140, bottomAlign: !0 }]);
+      procCrop('desert-night-tiles-raw', [{ key: 'tile-night-sand-cube', rx: 0.02 * tw, ry: 0.04 * th, rw: 0.25 * tw, rh: 0.45 * th, ow: 54, oh: 54, bottomAlign: !1 }, { key: 'tile-night-sand-cuboid', rx: 0.26 * tw, ry: 0.04 * th, rw: 0.38 * tw, rh: 0.45 * th, ow: 108, oh: 54, bottomAlign: !1 }]);
     }
     if (this.textures.exists('snow-tiles-raw')) {
       const tw = this.textures.get('snow-tiles-raw').getSourceImage().width, th = this.textures.get('snow-tiles-raw').getSourceImage().height;
@@ -743,183 +731,70 @@ class BootScene extends Phaser.Scene {
       this.anims.create({ key: 'eagle-fly', frames: [{ key: 'eagle-spritesheet', frame: 0 }, { key: 'eagle-spritesheet', frame: 1 }, { key: 'eagle-spritesheet', frame: 2 }], frameRate: 7, repeat: -1 });
     }
 
-    synth.getCtx();
-    this.scene.start('IntroVideoScene');
+    window.bootSceneRef = this;
+    window.gameReady = true;
+
+    if (window.userStarted) {
+      const splash = document.getElementById('instant-splash');
+      if (splash) splash.classList.add('hidden');
+      this.scene.start('StoryVideoScene');
+    } else {
+      this.scene.start('TapToStartScene');
+    }
   }
 }
 
-class IntroVideoScene extends Phaser.Scene {
-  constructor() { super('IntroVideoScene'); }
+class TapToStartScene extends Phaser.Scene {
+  constructor() { super('TapToStartScene'); }
   create() {
     synth.stopMenuBGM();
+    document.body.style.backgroundColor = '#000000';
     const W = this.scale.width, H = this.scale.height;
-    this.add.rectangle(W / 2, H / 2, W, H, 0x000000).setDepth(0);
-    this.canContinue = !1;
-    this.isTransitioning = !1;
 
-    // 1. Play vjworld_intro.mp4 immediately with responsive fit
-    if (this.cache.video.exists('vj-intro')) {
-      try {
-        this.videoObj = this.add.video(W / 2, H / 2, 'vj-intro').setOrigin(0.5).setMute(!1).setVolume(1.0).setDepth(1);
-        this.videoObj.play();
-        const fit = () => {
-          if (this.videoObj?.video?.videoWidth > 0) {
-            const sc = Math.max(W / this.videoObj.video.videoWidth, H / this.videoObj.video.videoHeight);
-            this.videoObj.setScale(sc);
-          }
-        };
-        this.videoObj.on('play', fit);
-        this.videoObj.on('unlocked', fit);
-        this.videoObj.on('complete', () => this.goToStory());
-        if (this.videoObj.video) {
-          this.videoObj.video.addEventListener('ended', () => this.goToStory());
-        }
-        this.time.addEvent({ delay: 100, repeat: 10, callback: fit });
-      } catch (e) {
-        try {
-          this.videoObj?.setMute(!0);
-          this.videoObj?.play();
-        } catch (err) {}
-      }
-    }
+    // Pitch-black backdrop
+    this.add.rectangle(W / 2, H / 2, W, H, 0x000000).setOrigin(0.5).setDepth(0);
 
-    // Direct SKIP button at top-right
-    const skipBtn = this.add.container(W - 65, 30).setDepth(100);
-    const sGfx = this.add.graphics();
-    sGfx.fillStyle(0x0c0714, 0.80);
-    sGfx.fillRoundedRect(-45, -16, 90, 32, 8);
-    sGfx.lineStyle(1.8, 0xffd700, 0.9);
-    sGfx.strokeRoundedRect(-45, -16, 90, 32, 8);
-    const sTxt = this.add.text(0, 0, 'SKIP ⏭️', { fontFamily: 'Arial Black', fontSize: '12px', color: '#ffd700' }).setOrigin(0.5);
-    skipBtn.add([sGfx, sTxt]);
-    skipBtn.setSize(90, 32).setInteractive({ useHandCursor: !0 });
-    skipBtn.on('pointerdown', (p, x, y, ev) => { if (ev) ev.stopPropagation(); this.goToStory(); });
+    // Hide HTML splash if Phaser's TapToStartScene takes over directly
+    const splash = document.getElementById('instant-splash');
+    if (splash) splash.classList.add('hidden');
 
-    // 2. Aesthetic Golden Loading Bar & Percentage Counter (Bottom Center)
-    const barW = 460, barH = 16, barY = H - 52;
-    this.loadingContainer = this.add.container(W / 2, barY).setDepth(20);
+    // Royal Crown (Top)
+    this.add.text(W / 2, H / 2 - 40, '👑', { fontSize: '42px' }).setOrigin(0.5).setDepth(10);
 
-    // Glassmorphic bar background
-    const barBg = this.add.graphics();
-    barBg.fillStyle(0x000000, 0.75);
-    barBg.fillRoundedRect(-barW / 2, -barH / 2, barW, barH, 8);
-    barBg.lineStyle(2, 0xffd700, 0.95);
-    barBg.strokeRoundedRect(-barW / 2, -barH / 2, barW, barH, 8);
-
-    // Subtle outer glow
-    barBg.lineStyle(5, 0xffea00, 0.35);
-    barBg.strokeRoundedRect(-barW / 2 - 2, -barH / 2 - 2, barW + 4, barH + 4, 10);
-
-    // Fill bar
-    this.barFill = this.add.graphics();
-
-    // Percentage & Status Counter
-    this.pctText = this.add.text(0, -22, 'LOADING VJ REALM... 0%', {
-      fontFamily: 'Arial Black',
-      fontSize: '13px',
+    // POWERED BY VJ WORLD (BADA, Center, Royal Gold, NO GLOW)
+    this.add.text(W / 2, H / 2 + 12, '✦ POWERED BY VJ WORLD ✦', {
+      fontFamily: "Cinzel, 'Arial Black', serif",
+      fontSize: '40px',
       color: '#ffd700',
-      stroke: '#000000',
-      strokeThickness: 4
-    }).setOrigin(0.5);
+      fontStyle: 'bold',
+      stroke: '#180900',
+      strokeThickness: 5
+    }).setOrigin(0.5).setDepth(10);
 
-    this.loadingContainer.add([barBg, this.barFill, this.pctText]);
+    // STUDIOS • ROYAL EDITION
+    this.add.text(W / 2, H / 2 + 48, 'STUDIOS  •  ROYAL EDITION', {
+      fontFamily: "'Arial Black', sans-serif",
+      fontSize: '12px',
+      color: '#d4af37',
+      letterSpacing: 4
+    }).setOrigin(0.5).setDepth(10);
 
-    // 3. Exactly 8 Seconds Smooth Progress (0% -> 100%)
-    this.loadProgress = 0;
-    this.tweens.add({
-      targets: this,
-      loadProgress: 100,
-      duration: 8000,
-      ease: 'Power1',
-      onUpdate: () => {
-        const pct = Math.floor(this.loadProgress);
-        this.pctText.setText(`LOADING VJ REALM... ${pct}%`);
-        const fillW = Math.max(0, (pct / 100) * (barW - 6));
-        this.barFill.clear();
-        this.barFill.fillStyle(0xffea00, 0.95);
-        this.barFill.fillRoundedRect(-barW / 2 + 3, -barH / 2 + 3, fillW, barH - 6, 5);
-      },
-      onComplete: () => {
-        this.showTapToContinue();
-      }
-    });
-
-    // Tap/Enter prompt listener: instant skip on user action
-    const onAction = () => {
-      this.goToStory();
+    let started = !1;
+    const startGame = () => {
+      if (started) return;
+      started = !0;
+      synth.getCtx();
+      const splash = document.getElementById('instant-splash');
+      if (splash) splash.classList.add('hidden');
+      this.cameras.main.fade(200, 0, 0, 0, !1, (c, p) => {
+        if (p === 1) this.scene.start('StoryVideoScene');
+      });
     };
-    this.input.on('pointerdown', onAction);
-    ['keydown-SPACE', 'keydown-ENTER'].forEach(e => this.input.keyboard.on(e, onAction));
-  }
 
-  showTapToContinue() {
-    const W = this.scale.width, H = this.scale.height;
-
-    // Fade out loading bar
-    this.tweens.add({
-      targets: this.loadingContainer,
-      alpha: 0,
-      duration: 350,
-      onComplete: () => {
-        this.loadingContainer?.destroy();
-      }
-    });
-
-    // Reveal glowing "Tap to Continue" screen
-    this.continueContainer = this.add.container(W / 2, H - 55).setDepth(25).setAlpha(0);
-
-    const promptCard = this.add.graphics();
-    promptCard.fillStyle(0x0c0714, 0.85);
-    promptCard.fillRoundedRect(-180, -22, 360, 44, 12);
-    promptCard.lineStyle(2.5, 0xffea00, 1.0);
-    promptCard.strokeRoundedRect(-180, -22, 360, 44, 12);
-    promptCard.lineStyle(6, 0xffd700, 0.40);
-    promptCard.strokeRoundedRect(-182, -24, 364, 48, 14);
-
-    const promptTxt = this.add.text(0, -4, 'TAP TO CONTINUE ⏩', {
-      fontFamily: 'Arial Black',
-      fontSize: '16px',
-      color: '#fff3a0',
-      stroke: '#180a00',
-      strokeThickness: 4
-    }).setOrigin(0.5);
-
-    const subTxt = this.add.text(0, 12, 'OR PRESS ENTER / SPACE', {
-      fontFamily: 'Arial Black',
-      fontSize: '9px',
-      color: '#ffd700'
-    }).setOrigin(0.5);
-
-    this.continueContainer.add([promptCard, promptTxt, subTxt]);
-
-    this.tweens.add({
-      targets: this.continueContainer,
-      alpha: 1,
-      duration: 400,
-      onComplete: () => {
-        this.canContinue = !0;
-        this.tweens.add({
-          targets: this.continueContainer,
-          scale: 1.04,
-          duration: 700,
-          yoyo: !0,
-          repeat: -1,
-          ease: 'Sine.easeInOut'
-        });
-      }
-    });
-  }
-
-  goToStory() {
-    if (this.isTransitioning) return;
-    this.isTransitioning = !0;
-    synth.getCtx();
-    if (this.videoObj) {
-      try { this.videoObj.stop(); this.videoObj.destroy(); } catch (e) {}
-    }
-    this.cameras.main.fade(350, 0, 0, 0, !1, (c, p) => {
-      if (p === 1) this.scene.start('StoryVideoScene');
-    });
+    this.input.once('pointerdown', startGame);
+    this.input.keyboard.on('keydown-SPACE', startGame);
+    this.input.keyboard.on('keydown-ENTER', startGame);
+    this.input.keyboard.once('keydown', startGame);
   }
 }
 
@@ -929,31 +804,26 @@ class StoryVideoScene extends Phaser.Scene {
     synth.stopMenuBGM();
     const W = this.scale.width, H = this.scale.height;
     this.add.rectangle(W / 2, H / 2, W, H, 0x000000).setDepth(0);
-    this.skipPressCount = 0;
     this.isTransitioning = !1;
 
-    // Play story.mp4 with audio and responsive fit (jaise pehle tha)
-    if (this.cache.video.exists('story-video')) {
-      try {
-        this.videoObj = this.add.video(W / 2, H / 2, 'story-video').setOrigin(0.5).setMute(!1).setVolume(1.0).setDepth(1);
-        this.videoObj.play();
-        const fit = () => {
-          if (this.videoObj?.video?.videoWidth > 0) {
-            this.videoObj.setScale(Math.min(W / this.videoObj.video.videoWidth, H / this.videoObj.video.videoHeight));
-          }
-        };
-        this.videoObj.on('play', fit);
-        this.videoObj.on('unlocked', fit);
-        this.time.addEvent({ delay: 100, repeat: 10, callback: fit });
-        this.videoObj.on('complete', () => this.goToTitle());
-        if (this.videoObj.video) {
-          this.videoObj.video.addEventListener('ended', () => this.goToTitle());
+    try {
+      this.videoObj = this.add.video(W / 2, H / 2).setOrigin(0.5).setMute(!1).setVolume(1.0).setDepth(1);
+      this.videoObj.loadURL('assets/story.mp4', !1);
+      const fit = () => {
+        if (this.videoObj?.video?.videoWidth > 0) {
+          this.videoObj.setScale(Math.min(W / this.videoObj.video.videoWidth, H / this.videoObj.video.videoHeight));
         }
-      } catch (e) {
-        this.goToTitle();
+      };
+      this.videoObj.on('play', fit);
+      this.videoObj.on('unlocked', fit);
+      this.time.addEvent({ delay: 100, repeat: 10, callback: fit });
+      this.videoObj.on('complete', () => this.goToTitle());
+      if (this.videoObj.video) {
+        this.videoObj.video.addEventListener('ended', () => this.goToTitle());
       }
-    } else {
-      this.time.delayedCall(300, () => this.goToTitle());
+      this.videoObj.play();
+    } catch (e) {
+      this.goToTitle();
     }
 
     // Skip prompt at bottom (original behavior: 2-tap to skip)
@@ -1003,18 +873,49 @@ class StoryVideoScene extends Phaser.Scene {
     if (this.isTransitioning) return;
     this.isTransitioning = !0;
     synth.getCtx();
-    if (this.videoObj) {
-      try { this.videoObj.stop(); this.videoObj.destroy(); } catch (e) {}
+
+    const proceed = () => {
+      this.cameras.main.fade(280, 0, 0, 0, !1, (c, p) => {
+        if (p === 1) {
+          if (this.videoObj) {
+            try {
+              if (this.videoObj.video) {
+                this.videoObj.video.pause();
+                this.videoObj.video.removeAttribute('src');
+                this.videoObj.video.src = '';
+                this.videoObj.video.load();
+              }
+              this.videoObj.stop();
+              this.videoObj.destroy();
+              this.videoObj = null;
+            } catch (e) {}
+          }
+          this.scene.start('TitleScene');
+        }
+      });
+    };
+
+    if (window.gameReady) {
+      proceed();
+    } else {
+      const waitTimer = this.time.addEvent({
+        delay: 50,
+        loop: true,
+        callback: () => {
+          if (window.gameReady) {
+            waitTimer.remove();
+            proceed();
+          }
+        }
+      });
     }
-    this.cameras.main.fade(300, 0, 0, 0, !1, (c, p) => {
-      if (p === 1) this.scene.start('TitleScene');
-    });
   }
 }
 
 class TitleScene extends Phaser.Scene {
   constructor() { super('TitleScene'); }
   create() {
+    this.cameras.main.fadeIn(280, 0, 0, 0);
     document.body.style.backgroundColor = '#0b101c';
     this.activeModal = null;
     const W = this.scale.width, H = this.scale.height;
@@ -1026,33 +927,54 @@ class TitleScene extends Phaser.Scene {
     const titleBgImg = this.textures.exists('title_bg') ? 'title_bg' : 'bg-sky';
     const fallbackBg = this.add.image(W / 2, H / 2, titleBgImg).setDisplaySize(W, H).setDepth(0);
 
-    if (this.cache.video.exists('title-bg-video')) {
-      try {
-        const bgVid = this.add.video(W / 2, H / 2, 'title-bg-video').setOrigin(0.5).setMute(!0).setDepth(1);
-        bgVid.play(!0); // loop softly
-        const fitVideo = () => {
-          if (bgVid?.video?.videoWidth > 0) {
-            const sc = Math.max(W / bgVid.video.videoWidth, H / bgVid.video.videoHeight);
-            bgVid.setScale(sc);
-            fallbackBg.setVisible(!1);
+    try {
+      const bgVid = this.add.video(W / 2, H / 2).setOrigin(0.5).setMute(!0).setDepth(1).setAlpha(0);
+      bgVid.loadURL('assets/title_bg.mp4', !0);
+      let crossfaded = !1;
+      const fitVideo = () => {
+        if (bgVid?.video?.videoWidth > 0) {
+          const sc = Math.max(W / bgVid.video.videoWidth, H / bgVid.video.videoHeight);
+          bgVid.setScale(sc);
+          if (!crossfaded && bgVid.video.currentTime > 0.05) {
+            crossfaded = !0;
+            this.tweens.add({
+              targets: bgVid,
+              alpha: 1,
+              duration: 300,
+              ease: 'Linear',
+              onComplete: () => {
+                fallbackBg.setVisible(!1);
+              }
+            });
           }
-        };
-        bgVid.on('play', fitVideo);
-        bgVid.on('unlocked', fitVideo);
-        if (bgVid.video) {
-          bgVid.video.loop = !0;
-          bgVid.video.muted = !0;
-          bgVid.video.playsInline = !0;
-          bgVid.video.setAttribute('playsinline', '');
-          bgVid.video.setAttribute('webkit-playsinline', '');
-          bgVid.video.addEventListener('loadeddata', fitVideo);
         }
-        this.time.addEvent({ delay: 100, repeat: 10, callback: fitVideo });
-        this.events.once('shutdown', () => {
-          try { bgVid.stop(); bgVid.destroy(); } catch (e) {}
-        });
-      } catch (e) {}
-    }
+      };
+      bgVid.on('play', fitVideo);
+      bgVid.on('unlocked', fitVideo);
+      if (bgVid.video) {
+        bgVid.video.loop = !0;
+        bgVid.video.muted = !0;
+        bgVid.video.playsInline = !0;
+        bgVid.video.setAttribute('playsinline', '');
+        bgVid.video.setAttribute('webkit-playsinline', '');
+        bgVid.video.addEventListener('loadeddata', fitVideo);
+        bgVid.video.addEventListener('timeupdate', fitVideo);
+      }
+      bgVid.play(!0);
+      this.time.addEvent({ delay: 100, repeat: 10, callback: fitVideo });
+      this.events.once('shutdown', () => {
+        try {
+          if (bgVid.video) {
+            bgVid.video.pause();
+            bgVid.video.removeAttribute('src');
+            bgVid.video.src = '';
+            bgVid.video.load();
+          }
+          bgVid.stop();
+          bgVid.destroy();
+        } catch (e) {}
+      });
+    } catch (e) {}
 
     // 2. Left-Bottom Corner: Character (assets/player shoot.png) - Smooth gentle bounce & interactive tap
     const pTexture = this.textures.exists('player_shoot_title') ? 'player_shoot_title' : 'player_shoot';
@@ -1067,10 +989,19 @@ class TitleScene extends Phaser.Scene {
       .setDepth(10)
       .setInteractive({ useHandCursor: !0 });
 
-    princeImg.on('pointerdown', () => {
+    princeImg.on('pointerdown', (pointer, localX, localY, event) => {
+      if (event) event.stopPropagation();
       synth.getCtx();
       if (synth.jump) synth.jump();
-      this.scene.start('LevelSelectScene');
+      this.tweens.add({
+        targets: princeImg,
+        scale: 0.94,
+        duration: 90,
+        yoyo: !0,
+        onComplete: () => {
+          this.scene.start('LevelSelectScene');
+        }
+      });
     });
 
     this.tweens.add({
@@ -1522,9 +1453,9 @@ class TitleScene extends Phaser.Scene {
 
     const scores = [
       { rank: '👑 1', name: 'VAIBHAV (VJ)', score: '28,500', title: 'SUPREME REALM CHAMPION' },
-      { rank: '🥈 2', name: 'ARJUN', score: '24,200', title: 'THAR DESERT CONQUEROR' },
-      { rank: '🥉 3', name: 'VEER', score: '21,800', title: 'KALINGA NIGHT GUARDIAN' },
-      { rank: '🎖️ 4', name: 'KABIR', score: '18,900', title: 'HIMALAYAN FROST RUNNER' },
+      { rank: '🥈 2', name: 'ARJUN', score: '24,200', title: 'THAR EXPEDITION CONQUEROR' },
+      { rank: '🥉 3', name: 'VEER', score: '21,800', title: 'LUNAR DUNES GUARDIAN' },
+      { rank: '🎖️ 4', name: 'KABIR', score: '18,900', title: 'HIMALAYAN CROWN RUNNER' },
       { rank: '🎖️ 5', name: 'DHRUV', score: '16,400', title: 'JAL MAHAL WATER SEEKER' }
     ];
 
@@ -1571,7 +1502,7 @@ class TitleScene extends Phaser.Scene {
     } else {
       const card = this.add.rectangle(W / 2, H / 2, 680, 420, 0x0d1117, 0.98).setStrokeStyle(3, 0xffcc00).setDepth(301);
       const title = this.add.text(W / 2, H / 2 - 170, 'THE LEGEND OF VJ — CHRONICLES', { fontFamily: 'Arial Black', fontSize: '20px', color: '#ffcc00', stroke: '#7a2fbf', strokeThickness: 5 }).setOrigin(0.5).setDepth(302);
-      const lore = `When the ancient elemental harmony was disrupted, 5 Sacred Gems were scattered across 7 dangerous Indian territories — Shivalik Hills, the mystical Sunderbans, scorching Thar Desert, Kalinga Midnight, the frozen Himalayan storms, the submerged Jal Mahal Palace, and the storm heights of Meghalaya.\n\nTaking up the warrior mantle, VJ ventures through each territory to vanquish mystical beasts, collect all 5 gems, and hoist the royal purple VJ crest atop the castles.`;
+      const lore = `When the ancient elemental harmony was disrupted, 5 Sacred Gems were scattered across 7 dangerous Indian territories — The Western Ghats, Sundarbans Tempest, Thar Expedition, Lunar Dunes, the frozen Himalayan Crown, the submerged Jal Mahal, and the storm heights of Meghalayan Heaven.\n\nTaking up the warrior mantle, VJ ventures through each territory to vanquish mystical beasts, collect all 5 gems, and hoist the royal purple VJ crest atop the castles.`;
       const loreTxt = this.add.text(W / 2, H / 2 - 50, lore, { fontFamily: 'Arial', fontSize: '13px', color: '#e2e8f0', align: 'center', wordWrap: { width: 610 }, lineSpacing: 4 }).setOrigin(0.5).setDepth(302);
       const credCard = this.add.rectangle(W / 2, H / 2 + 88, 620, 75, 0x161b22).setStrokeStyle(1.5, 0x7a2fbf).setDepth(302);
       const devTxt = this.add.text(W / 2, H / 2 + 76, 'LEAD CREATOR & DEVELOPER: VAIBHAV JAIN', { fontFamily: 'Arial Black', fontSize: '15px', color: '#ffd700' }).setOrigin(0.5).setDepth(303);
@@ -1672,6 +1603,8 @@ class LevelSelectScene extends Phaser.Scene {
     this.selectedIndex = 0;
     this.cardGlows = [];
     this.isStartingLevel = !1;
+    this.canSelect = !1;
+    this.time.delayedCall(250, () => { this.canSelect = !0; });
 
     cardsData.forEach((c) => {
       const isPlayable = c.lvl <= 7;
@@ -1718,8 +1651,9 @@ class LevelSelectScene extends Phaser.Scene {
           });
         });
 
-        const onSelect = () => {
-          if (this.isStartingLevel) return;
+        const onSelect = (pointer, localX, localY, event) => {
+          if (event) event.stopPropagation();
+          if (!this.canSelect || this.isStartingLevel) return;
           this.isStartingLevel = !0;
           try {
             synth.getCtx();
@@ -1731,7 +1665,6 @@ class LevelSelectScene extends Phaser.Scene {
           }
         };
         hitZone.on('pointerdown', onSelect);
-        hitZone.on('pointerup', onSelect);
       } else {
         hitZone.on('pointerover', () => {
           this.selectedIndex = c.lvl - 1;

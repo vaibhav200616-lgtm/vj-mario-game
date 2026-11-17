@@ -12,9 +12,9 @@ document.addEventListener('pointerdown', () => {
   }
 }, { once: !0 });
 
-new Phaser.Game({
-  type: Phaser.AUTO, width: 960, height: 540, parent: 'game-container', backgroundColor: '#5c94fc', pixelArt: !1,
+window.phaserGame = new Phaser.Game({
+  type: Phaser.AUTO, width: 960, height: 540, parent: 'game-container', backgroundColor: '#000000', pixelArt: !1,
   physics: { default: 'arcade', arcade: { gravity: { y: 1000 }, debug: !1 } },
   scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-  scene: [PreBootScene, BootScene, IntroVideoScene, StoryVideoScene, TitleScene, LevelSelectScene, PlayScene]
+  scene: [BootScene, TapToStartScene, StoryVideoScene, TitleScene, LevelSelectScene, PlayScene]
 });

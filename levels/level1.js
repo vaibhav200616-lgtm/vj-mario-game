@@ -1,12 +1,12 @@
 /* =====================================================================
    THE LEGEND OF VJ — levels/level1.js
-   Level 1: SHIVALIK HILLS
+   Level 1: The Western Ghats
    ===================================================================== */
 
 window.LEVEL_DATA = window.LEVEL_DATA || {};
 
 window.LEVEL_DATA[1] = {
-  name: 'SHIVALIK HILLS',
+  name: 'The Western Ghats',
   bgColor: '#5c94fc',
   bgKey: 'bg-sky',
   levelWidth: 4700,

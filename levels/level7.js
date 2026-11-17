@@ -1,12 +1,12 @@
 /* =====================================================================
    THE LEGEND OF VJ — levels/level7.js
-   Level 7: MEGHALAYA HEAVENS (Sky/Air)
+   Level 7: Meghalayan Heaven
    ===================================================================== */
 
 window.LEVEL_DATA = window.LEVEL_DATA || {};
 
 window.LEVEL_DATA[7] = {
-  name: 'MEGHALAYA HEAVENS',
+  name: 'Meghalayan Heaven',
   bgColor: '#2a1a3a',
   bgKey: 'air-bg',
   levelWidth: 9600,
@@ -59,8 +59,8 @@ window.LEVEL_DATA[7] = {
   // Ground-sky transition: player x range for bg fade
   groundTransition: { startX: 5900, endX: 8650 },
 
-  // Stars x positions (26 collectible stars evenly distributed)
-  stars: [350, 650, 950, 1300, 1650, 2000, 2350, 2700, 3050, 3400, 3750, 4100, 4450, 4800, 5150, 5500, 5850, 6200, 6550, 6900, 7250, 7600, 7950, 8250, 8550, 8750],
+  // Stars x positions (purely in open air gaps between cloud tiles - not sitting on any cloud)
+  stars: [450, 1050, 1400, 1620, 1880, 2120, 2350, 2550, 2850, 3180, 3420, 3630, 3830, 4080, 4330, 4550, 4750, 5050, 5350, 5550, 5800, 6150, 6450, 6650, 6930, 7280, 7550, 7800, 8050],
 
   heartX: 5950,
 
